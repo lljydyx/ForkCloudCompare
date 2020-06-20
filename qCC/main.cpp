@@ -131,9 +131,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	//splash screen
-	QScopedPointer<QSplashScreen> splash(nullptr);
-	QTimer splashTimer;
+	////splash screen
+	//QScopedPointer<QSplashScreen> splash(nullptr);
+	//QTimer splashTimer;
 
 	//standard mode
 	if (!commandLine)
@@ -144,11 +144,11 @@ int main(int argc, char **argv)
 			return EXIT_FAILURE;
 		}
 
-		//splash screen
-		QPixmap pixmap(QString::fromUtf8(":/CC/images/imLogoV2Qt.png"));
-		splash.reset(new QSplashScreen(pixmap, Qt::WindowStaysOnTopHint));
-		splash->show();
-		QApplication::processEvents();
+		////splash screen
+		//QPixmap pixmap(QString::fromUtf8(":/CC/images/imLogoV2Qt.png"));
+		//splash.reset(new QSplashScreen(pixmap, Qt::WindowStaysOnTopHint));
+		//splash->show();
+		//QApplication::processEvents();
 	}
 
 	//global structures initialization
@@ -189,10 +189,10 @@ int main(int argc, char **argv)
 
 		if (argc > lastArgumentIndex)
 		{
-			if (splash)
-			{
-				splash->close();
-			}
+			//if (splash)
+			//{
+			//	splash->close();
+			//}
 
 			//any additional argument is assumed to be a filename --> we try to load it/them
 			QStringList filenames;
@@ -233,13 +233,13 @@ int main(int argc, char **argv)
 
 			mainWindow->addToDB(filenames);
 		}
-		else if (splash)
-		{
-			//count-down to hide the timer (only effective once the application will have actually started!)
-			QObject::connect(&splashTimer, &QTimer::timeout, [&]() { if (splash) splash->close(); QCoreApplication::processEvents(); splash.reset(); });
-			splashTimer.setInterval(1000);
-			splashTimer.start();
-		}
+		//else if (splash)
+		//{
+		//	//count-down to hide the timer (only effective once the application will have actually started!)
+		//	QObject::connect(&splashTimer, &QTimer::timeout, [&]() { if (splash) splash->close(); QCoreApplication::processEvents(); splash.reset(); });
+		//	splashTimer.setInterval(1000);
+		//	splashTimer.start();
+		//}
 
 		//change the default path to the application one (do this AFTER processing the command line)
 		QDir  workingDir = QCoreApplication::applicationDirPath();

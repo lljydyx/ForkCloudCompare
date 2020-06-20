@@ -204,7 +204,7 @@ MainWindow::MainWindow()
 {
 	m_UI->setupUi( this );
 
-	setWindowTitle(QStringLiteral("CloudCompare v") + ccApp->versionLongStr(false));
+	setWindowTitle(QStringLiteral("累了就要打游戏   CloudCompare v") + ccApp->versionLongStr(false));
 	
 	m_pluginUIManager = new ccPluginUIManager( this, this );
 	

@@ -138,7 +138,7 @@ else( UNIX )
 endif()
 
 # Translation
-add_subdirectory( translations )
+#add_subdirectory( translations )
 
 # Put together our Application bundle on macOS
 if( APPLE )    
