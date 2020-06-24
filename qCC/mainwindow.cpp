@@ -11012,3 +11012,430 @@ void MainWindow::doActionComparePlanes()
 	QMessageBox::information(this, "Plane comparison", info.join("\n"));
 	forceConsoleDisplay();
 }
+
+
+/* 提取交通标线 extract traffic marking */
+/* The returned threshold of intensity is obtained by OTSU. */
+uint xjGetIntensityByOTSU(ccPointCloud* cloud, const char *sf, const bool &bSmooth)
+{
+	uint thrIntensity = 1;
+
+	/* 1 强度直方图 */
+	uint histogramIntensity[65536] = { 0 };
+	uint maxIntensity = 0, minIntensity = 666666;
+	uint pcCount = cloud->size();
+	ccScalarField* ccSF = static_cast<ccScalarField*>(cloud->getScalarField(cloud->getScalarFieldIndexByName(sf)));
+	for (int i = 0; i < pcCount; i++)
+	{
+		uint vIntensity = ccSF->getValue(i);
+		if (vIntensity > maxIntensity)
+		{
+			maxIntensity = vIntensity;
+		}
+		if (vIntensity < minIntensity)
+		{
+			minIntensity = vIntensity;
+		}
+		++histogramIntensity[vIntensity];
+	}
+
+	/* 2 与附近2个灰度做平滑化，t值应取较小的值 */
+	if (bSmooth)
+	{
+		for (int k = minIntensity; k <= maxIntensity; k++)
+		{
+			uint total = 0;
+			for (int t = -2; t <= 2; t++)
+			{
+				int q = k + t;
+				if (q < 0) //越界处理
+					q = 0;
+				if (q > 255)
+					q = 255;
+				total = total + histogramIntensity[q]; //total为总和，累计值
+			}
+			//平滑化，左边2个+中间1个+右边2个灰度，共5个，所以总和除以5，后面加0.5是用修正值
+			histogramIntensity[k] = (int)((float)total / 5.0 + 0.5);
+		}
+	}
+
+	/* 3 计算阈值 */
+	double sum = 0.0;
+	int n = 0;
+	//计算总的图象的点数和质量矩，为后面的计算做准备
+	for (int k = minIntensity; k <= maxIntensity; k++)
+	{
+		//x*f(x)质量矩，也就是每个灰度的值乘以其点数（归一化后为概率），sum为其总和
+		sum += (double)k * (double)histogramIntensity[k];
+		n += histogramIntensity[k]; //n为图象总的点数，归一化后就是累积概率
+	}
+
+	double otsu = -1.0;
+	int n1 = 0;
+	double csum = 0.0;
+	for (int k = minIntensity; k <= maxIntensity; k++) //对每个灰度（从0到255）计算一次分割后的类间方差sb
+	{
+		n1 += histogramIntensity[k]; //n1为在当前阈值遍前景图象的点数
+		if (n1 == 0) { continue; } //没有分出前景后景
+		int n2 = n - n1; //n2为背景图象的点数
+		if (n2 == 0) { break; }//n2为0表示全部都是后景图象，与n1=0情况类似，之后的遍历不可能使前景点数增加，所以此时可以退出循环
+
+		csum += (double)k * histogramIntensity[k]; //前景的“灰度的值*其点数”的总和
+		double m1 = csum / n1; //m1为前景的平均灰度
+		double m2 = (sum - csum) / n2; //m2为背景的平均灰度
+		double sb = (double)n1 * (double)n2 * (m1 - m2) * (m1 - m2); //sb为类间方差
+		if (sb > otsu) //如果算出的类间方差大于前一次算出的类间方差
+		{
+			otsu = sb; //otsu始终为最大类间方差（otsu）
+			thrIntensity = k; //取最大类间方差时对应的灰度的k就是最佳阈值
+		}
+	}
+
+
+	if (1 == 2)//method2
+	{
+		float tempVarValueTemp = 1.0f;
+		for (int i = minIntensity; i <= maxIntensity; i++)
+		{
+			float w0 = 0, w1 = 0, u1 = 0, u0 = 0;
+			for (int j = minIntensity; j <= i; j++)
+			{
+				w1 += histogramIntensity[j]; // 背景像素点总数
+				u1 += j * histogramIntensity[j];// 背景部分像素灰度总和
+			}
+			if (w1 == 0)
+			{
+				continue;
+			}
+
+			u1 = u1 / w1; // 背景值的平均灰度
+			w1 = w1 / pcCount; // 背景部分点数所占的比例
+
+			for (int k = i + 1; k <= maxIntensity; k++)
+			{
+				w0 += histogramIntensity[k]; // 前景部分像素点总和
+				u0 += k * histogramIntensity[k]; // 前景部分像素灰度总和
+			}
+
+			if (w0 == 0)
+			{
+				break;
+			}
+
+			u0 = u0 / w0;
+			w0 = w0 / pcCount;
+
+			float varValue = w0 * w1 * (u1 - u0)*(u1 - u0);
+			if (tempVarValueTemp < varValue)
+			{
+				tempVarValueTemp = varValue;
+				thrIntensity = i;
+			}
+		}
+	}
+
+	return thrIntensity;
+}
+
+/* 获取标线点 get traffic marking points */
+std::vector<CCVector3> xjGetTrafficMarkingPoints(ccPointCloud* cloud, const char *sf, const uint &threshold, const bool &bCluster)
+{
+	std::vector<CCVector3> vMarkingPoints;
+
+	ccScalarField* ccSF = static_cast<ccScalarField*>(cloud->getScalarField(cloud->getScalarFieldIndexByName(sf)));
+	for (int i = 0; i < cloud->size(); i++)
+	{
+		if ((uint)ccSF->getValue(i) >= threshold)
+		{
+			CCVector3 p(cloud->getPoint(i)->x, cloud->getPoint(i)->y, cloud->getPoint(i)->z);
+			vMarkingPoints.push_back(p);
+		}
+	}
+
+	if (bCluster)
+	{
+
+	}
+
+	return vMarkingPoints;
+}
+
+
+/* 凸包 convex hull */
+//返回 点与点的平面距离
+double TwoDistancePointAndPoint(const CCVector3 &p1, const CCVector3 &p2)
+{
+	double x1 = p1.x, y1 = p1.y;
+	double x2 = p2.x, y2 = p2.y;
+
+	double dis = sqrt((x1 - x2)*(x1 - x2) + (y1 - y2)*(y1 - y2));
+
+	return dis;
+}
+/*返回 两个向量的叉积（p0是公共点）*/
+double xjGetCrossProduct(const CCVector3 & p1, const CCVector3 & p2, const CCVector3 & p0)
+{
+	return ((p1.x - p0.x) * (p2.y - p0.y) - (p2.x - p0.x) * (p1.y - p0.y));
+}
+/* 凸包 convex hull */
+std::vector<CCVector3> xjGetConvexHullByGrahamScan(std::vector<CCVector3> vPoint)
+{
+	std::vector<CCVector3> vConvexHullPoint;
+
+	int i = 0, j = 0, k = 0;
+	CCVector3 tmP = vPoint[0];
+
+	//排序 找到最下且偏左的点
+	for (i = 1; i < vPoint.size(); i++)
+	{
+		if ((vPoint[i].y < tmP.y) || ((vPoint[i].y == tmP.y) && (vPoint[i].x < tmP.x)))
+		{
+			tmP = vPoint[i];
+			k = i;
+		}
+	}
+	vPoint[k] = vPoint[0];
+	vPoint[0] = tmP;
+
+	//排序 按极角从小到大，距离从近到远 
+	for (i = 1; i < vPoint.size(); i++)
+	{
+		k = i;
+		for (j = i + 1; j < vPoint.size(); j++)
+		{
+			double cross = xjGetCrossProduct(vPoint[j], vPoint[k], vPoint[0]);
+			double disance_j = TwoDistancePointAndPoint(vPoint[0], vPoint[j]);
+			double disance_k = TwoDistancePointAndPoint(vPoint[0], vPoint[k]);
+			if ((cross > 0) || ((cross == 0) && (disance_j < disance_k)))
+			{
+				k = j;//k保存极角最小的那个点,或者相同距离原点最近
+			}
+		}
+		tmP = vPoint[i];
+		vPoint[i] = vPoint[k];
+		vPoint[k] = tmP;
+	}
+
+	//添加第一、二个凸包点
+	vConvexHullPoint.push_back(vPoint[0]);
+	vConvexHullPoint.push_back(vPoint[1]);
+
+	////遍历
+	for (i = 2; i < vPoint.size(); ++i)
+	{
+		for (j = i + 1; j < vPoint.size(); ++j)
+		{
+			if (xjGetCrossProduct(vPoint[i], vPoint[j], vConvexHullPoint[vConvexHullPoint.size() - 1]) < 0)
+			{
+				i = j;
+			}
+		}
+		vConvexHullPoint.push_back(vPoint[i]);
+	}
+
+	return vConvexHullPoint;
+}
+
+
+/* 最小外接矩形 MBR */
+//返回 点（p0）  到线（p1，p2）的距离
+double TwoDistancePointAndLine(const CCVector3 &p0, const CCVector3 &p1, const CCVector3 &p2)
+{
+	double dis12 = TwoDistancePointAndPoint(p1, p2);//线段长度
+	double dis01 = TwoDistancePointAndPoint(p0, p1);//p1与p0的距离
+	double dis02 = TwoDistancePointAndPoint(p0, p2);//p2与p0的距离
+	double HalfC = (dis12 + dis01 + dis02) / 2;// 半周长
+	double s = sqrt(HalfC * (HalfC - dis12) * (HalfC - dis01) * (HalfC - dis02));//海伦公式求面积
+	double xj2DisPL = 2 * s / dis12;// 返回点到线的距离（利用三角形面积公式求高）
+
+	return xj2DisPL;
+}
+/* MBR */
+/*返回 最小外接矩形点*/
+/* xjListCH 凸包点 */
+void xjMinimumBoundingRectangle(QList<CCVector3> &xjListMBRpoint, double &length, double &width, QList<CCVector3> xjListCH)
+{
+	//外接矩形
+	QList<CCVector3> xjListCH2;
+	int xjPcount = xjListCH.size();
+	for (int i = 0; i < xjPcount; i++)
+	{
+		xjListCH2.append(xjListCH.at(i));
+	}
+	qSort(xjListCH2.begin(), xjListCH2.end(), [](const CCVector3 &a, const CCVector3 &b) {return a.x < b.x; });
+	double minX = xjListCH2.at(0).x;
+	double maxX = xjListCH2.at(xjPcount - 1).x;
+	qSort(xjListCH2.begin(), xjListCH2.end(), [](const CCVector3 &a, const CCVector3 &b) {return a.y < b.y; });
+	double minY = xjListCH2.at(0).y;
+	double maxY = xjListCH2.at(xjPcount - 1).y;
+
+	//依次判断
+	double minArea = 99999999;
+	xjListCH.push_back(xjListCH.at(0));
+	for (int a = 0; a < xjListCH.size() - 1; a++)
+	{
+		CCVector3 p0 = xjListCH.at(a);
+		CCVector3 p1 = xjListCH.at(a + 1);
+
+		if ((p0.y == p1.y) || (p0.x == p1.x)) // 水平或垂直
+		{
+			double side1 = maxY - minY;
+			double side0 = maxX - minX;
+			double xjArea = side0 * side1;
+
+			if (xjArea <= minArea)
+			{
+				length = std::max(side0, side1);
+				width = std::min(side0, side1);
+				minArea = xjArea;
+
+				//外接矩形四个点
+				CCVector3 pLB;
+				pLB.x = minX;
+				pLB.y = minY;
+				pLB.z = 0;
+				CCVector3 pRB;
+				pRB.x = maxX;
+				pRB.y = minY;
+				pRB.z = 0;
+				CCVector3 pRT;
+				pRT.x = maxX;
+				pRT.y = maxY;
+				pRT.z = 0;
+				CCVector3 pLT;
+				pLT.x = minX;
+				pLT.y = maxY;
+				pLT.z = 0;
+
+				xjListMBRpoint.clear();
+				xjListMBRpoint.append(pLB);
+				xjListMBRpoint.append(pRB);
+				xjListMBRpoint.append(pRT);
+				xjListMBRpoint.append(pLT);
+			}
+		}
+		else //不水平 不垂直
+		{
+			double k1 = (p1.y - p0.y) / (p1.x - p0.x);
+			double b1 = p0.y - k1 * p0.x;
+			double side0 = -3;
+			CCVector3 Pside0;
+			for (int j = 0; j < xjListCH.size(); j++)
+			{
+				if ((j == a) || (j == (a + 1)))
+					continue;
+
+				CCVector3 p = xjListCH.at(j);
+				double dis = abs(TwoDistancePointAndLine(p, p0, p1));
+				if (dis >= side0)
+				{
+					side0 = dis;
+					Pside0.x = p.x;
+					Pside0.y = p.y;
+					Pside0.z = p.z;
+				}
+			}
+			double b11 = Pside0.y - k1 * Pside0.x;
+
+			//垂直方向
+			double k2 = -1.0 / k1;
+			double bb = p0.y - k2 * p0.x;
+			double side1_positive = -3;
+			CCVector3 Pside1_positive;
+			double side1_negative = 9999999;
+			CCVector3 Pside1_negative;
+			for (int j = 0; j < xjListCH.size(); j++)
+			{
+				CCVector3 p = xjListCH.at(j);
+				double dis = (k2*p.x - p.y + bb) / (sqrt(k2*k2 + 1));
+				if ((dis >= 0) && (dis >= side1_positive))
+				{
+					side1_positive = dis;
+					Pside1_positive.x = p.x;
+					Pside1_positive.y = p.y;
+					Pside1_positive.z = p.z;
+				}
+				if ((dis < 0) && (dis <= side1_negative))
+				{
+					side1_negative = dis;
+					Pside1_negative.x = p.x;
+					Pside1_negative.y = p.y;
+					Pside1_negative.z = p.z;
+				}
+			}
+
+			double b2 = Pside1_positive.y - k2 * Pside1_positive.x;
+			double b22 = Pside1_negative.y - k2 * Pside1_negative.x;
+
+			//面积和周长
+			double side1 = abs(side1_positive) + abs(side1_negative);
+			double xjArea = side0 * side1;
+
+			if (xjArea <= minArea)
+			{
+				length = std::max(side0, side1);
+				width = std::min(side0, side1);
+				minArea = xjArea;
+
+				//外接矩形四个点
+				CCVector3 br0;
+				br0.x = (b1 - b22) / (k2 - k1);
+				br0.y = k1 * br0.x + b1;
+				CCVector3 br1;
+				br1.x = (b11 - b22) / (k2 - k1);
+				br1.y = k1 * br1.x + b11;
+				CCVector3 br2;
+				br2.x = (b2 - b11) / (k1 - k2);
+				br2.y = k1 * br2.x + b11;
+				CCVector3 br3;
+				br3.x = (b2 - b1) / (k1 - k2);
+				br3.y = k1 * br3.x + b1;
+
+				xjListMBRpoint.clear();
+				xjListMBRpoint.append(br0);
+				xjListMBRpoint.append(br1);
+				xjListMBRpoint.append(br2);
+				xjListMBRpoint.append(br3);
+			}
+		}
+	}
+
+	//MBR提示信息
+	QString MBRinfo = "chMBR: length = " + QString::number(length, 'f', 4) + ", ";
+	MBRinfo += "width = " + QString::number(width, 'f', 4) + ", ";
+	MBRinfo += "minimum area = " + QString::number(minArea) + ", ";
+	MBRinfo += "circumference = " + QString::number((length + width) * 2);
+}
+
+
+
+void MainWindow::on_actionExtractTrafficMarking_triggered()
+{
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* threshold */
+				uint threshold = xjGetIntensityByOTSU(cloud, "Intensity", false);
+
+				/* points of traffic marking */
+				std::vector<CCVector3> vMarkingPoints = xjGetTrafficMarkingPoints(cloud, "Intensity", threshold, false);
+
+
+				ccLog::Print("threshold="+QString::number(threshold)+"	"
+					"tmPointCount="+ QString::number(vMarkingPoints.size())+"	"
+				);
+
+
+
+			}
+		}
+	}
+
+	refreshAll();
+	updateUI();
+}

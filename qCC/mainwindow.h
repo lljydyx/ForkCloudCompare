@@ -317,6 +317,9 @@ private slots:
 	void doActionFlipPlane();
 	void doActionComparePlanes();
 
+	/* 提取交通标线 extract traffic marking */
+	void on_actionExtractTrafficMarking_triggered();
+
 	void doActionDeleteScanGrids();
 	void doActionSmoothMeshSF();
 	void doActionEnhanceMeshSF();

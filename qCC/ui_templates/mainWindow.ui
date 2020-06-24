@@ -39,7 +39,7 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>31</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -701,6 +701,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionPrimitiveFactory"/>
    <addaction name="actionRasterize"/>
    <addaction name="actionSORFilter"/>
+   <addaction name="actionExtractTrafficMarking"/>
    <addaction name="separator"/>
    <addaction name="actionSegment"/>
    <addaction name="actionTranslateRotate"/>
@@ -1147,7 +1148,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>T</string>
-   </property>  
+   </property>
   </action>
   <action name="actionTranslateRotate">
    <property name="checkable">
@@ -2370,7 +2371,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>X</string>
-   </property>   
+   </property>
   </action>
   <action name="actionEditGlobalShiftAndScale">
    <property name="text">
@@ -2531,7 +2532,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>E</string>
-   </property>   
+   </property>
   </action>
   <action name="actionInterpolateColors">
    <property name="text">
@@ -3061,6 +3062,14 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>Export normals to one or several scalar fields</string>
+   </property>
+  </action>
+  <action name="actionExtractTrafficMarking">
+   <property name="text">
+    <string>提取交通标线</string>
+   </property>
+   <property name="toolTip">
+    <string>矢量化交通标线</string>
    </property>
   </action>
  </widget>
