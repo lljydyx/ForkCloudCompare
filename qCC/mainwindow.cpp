@@ -11022,7 +11022,7 @@ uint xjGetIntensityByOTSU(ccPointCloud* cloud, const char *sf, const bool &bSmoo
 
 	/* 1 强度直方图 */
 	uint histogramIntensity[65536] = { 0 };
-	uint maxIntensity = 0, minIntensity = 666666;
+	uint maxIntensity = 0, minIntensity = 666666;//最大最小强度值
 	uint pcCount = cloud->size();
 	ccScalarField* ccSF = static_cast<ccScalarField*>(cloud->getScalarField(cloud->getScalarFieldIndexByName(sf)));
 	for (int i = 0; i < pcCount; i++)
@@ -11060,34 +11060,35 @@ uint xjGetIntensityByOTSU(ccPointCloud* cloud, const char *sf, const bool &bSmoo
 	}
 
 	/* 3 计算阈值 */
-	double sum = 0.0;
-	int n = 0;
-	//计算总的图象的点数和质量矩，为后面的计算做准备
+	//质量矩 += 强度 * 点数
+	double sumIntensity = 0.0;
 	for (int k = minIntensity; k <= maxIntensity; k++)
 	{
-		//x*f(x)质量矩，也就是每个灰度的值乘以其点数（归一化后为概率），sum为其总和
-		sum += (double)k * (double)histogramIntensity[k];
-		n += histogramIntensity[k]; //n为图象总的点数，归一化后就是累积概率
+		sumIntensity += (double)k * (double)histogramIntensity[k];
 	}
 
 	double otsu = -1.0;
-	int n1 = 0;
-	double csum = 0.0;
-	for (int k = minIntensity; k <= maxIntensity; k++) //对每个灰度（从0到255）计算一次分割后的类间方差sb
+	int w0 = 0;//小于等于当前阈值的点数（前景点数）
+	double sumFore = 0.0;//前景质量矩
+	for (int k = minIntensity; k <= maxIntensity; k++)
 	{
-		n1 += histogramIntensity[k]; //n1为在当前阈值遍前景图象的点数
-		if (n1 == 0) { continue; } //没有分出前景后景
-		int n2 = n - n1; //n2为背景图象的点数
-		if (n2 == 0) { break; }//n2为0表示全部都是后景图象，与n1=0情况类似，之后的遍历不可能使前景点数增加，所以此时可以退出循环
+		w0 += histogramIntensity[k];
+		int w1 = pcCount - w0;//（后景点数）
+		if (w0 == 0)
+			continue;
+		if (w1 == 0)
+			break;
 
-		csum += (double)k * histogramIntensity[k]; //前景的“灰度的值*其点数”的总和
-		double m1 = csum / n1; //m1为前景的平均灰度
-		double m2 = (sum - csum) / n2; //m2为背景的平均灰度
-		double sb = (double)n1 * (double)n2 * (m1 - m2) * (m1 - m2); //sb为类间方差
-		if (sb > otsu) //如果算出的类间方差大于前一次算出的类间方差
+		sumFore += (double)k * histogramIntensity[k];
+
+		double u0 = sumFore / w0; //前景的平均灰度
+		double u1 = (sumIntensity - sumFore) / w1; //背景的平均灰度
+		double g = (double)w0 * (double)w1 * (u0 - u1) * (u0 - u1); //类间方差
+
+		if (g > otsu)
 		{
-			otsu = sb; //otsu始终为最大类间方差（otsu）
-			thrIntensity = k; //取最大类间方差时对应的灰度的k就是最佳阈值
+			otsu = g;
+			thrIntensity = k;
 		}
 	}
 
