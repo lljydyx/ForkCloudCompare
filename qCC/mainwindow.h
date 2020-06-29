@@ -29,6 +29,9 @@
 //CCLib
 #include <AutoSegmentationTools.h>
 
+//local
+#include "xjAlgorithm.h"
+
 class QAction;
 class QMdiArea;
 class QMdiSubWindow;
