@@ -11028,7 +11028,6 @@ void MainWindow::on_actionExtractTrafficMarking_triggered()
 			{
 				/* threshold */
 				uint threshold = xjal->xjGetIntensityByOTSU(cloud, "Intensity", false);
-				//threshold = 1;
 
 				/* points of traffic marking */
 				std::vector<CCVector3> vMarkingPoints = xjal->xjGetTrafficMarkingPoints(cloud, "Intensity", threshold, false);
