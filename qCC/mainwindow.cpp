@@ -11013,7 +11013,7 @@ void MainWindow::doActionComparePlanes()
 	forceConsoleDisplay();
 }
 
-
+/* ------------------------------- */
 /* 提取交通标线 extract traffic marking: 20200629未完成 */
 void MainWindow::on_actionExtractTrafficMarking_triggered()
 {
@@ -11051,6 +11051,35 @@ void MainWindow::on_actionExtractTrafficMarking_triggered()
 					+"  proportion=" + QString::number(areaCH /length/width)
 					+"  length=" + QString::number(length) + "," + "width=" + QString::number(width)
 				);
+
+
+
+			}
+		}
+	}
+	refreshAll();
+	updateUI();
+
+	delete xjal;
+	xjal = nullptr;
+}
+
+/* 测试 */
+void MainWindow::on_actionDoTest_triggered()
+{
+	xjAlgorithm *xjal = new xjAlgorithm();
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* To do... */
+
+
+				ccLog::Print(cloud->getName());
 
 
 

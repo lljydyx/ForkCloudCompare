@@ -322,6 +322,8 @@ private slots:
 
 	/* 提取交通标线 extract traffic marking */
 	void on_actionExtractTrafficMarking_triggered();
+	/* 测试 */
+	void on_actionDoTest_triggered();
 
 	void doActionDeleteScanGrids();
 	void doActionSmoothMeshSF();

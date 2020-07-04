@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>768</height>
+    <width>760</width>
+    <height>563</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,7 +38,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1024</width>
+     <width>760</width>
      <height>23</height>
     </rect>
    </property>
@@ -701,7 +701,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionPrimitiveFactory"/>
    <addaction name="actionRasterize"/>
    <addaction name="actionSORFilter"/>
-   <addaction name="actionExtractTrafficMarking"/>
+   <addaction name="actionDoTest"/>
    <addaction name="separator"/>
    <addaction name="actionSegment"/>
    <addaction name="actionTranslateRotate"/>
@@ -3070,6 +3070,18 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>矢量化交通标线</string>
+   </property>
+  </action>
+  <action name="actionDoTest">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/theme/snowman.png</normaloff>:/CC/images/theme/snowman.png</iconset>
+   </property>
+   <property name="text">
+    <string>测试</string>
+   </property>
+   <property name="toolTip">
+    <string>测试</string>
    </property>
   </action>
  </widget>

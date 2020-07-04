@@ -3,7 +3,8 @@
 
 
 /* 短标线 short marking: view part result: ccPointCloud*/
-void xjAlgorithm::ViewPartResult(ccPointCloud *cloud, const std::vector<CCVector3> &vPoint, const QString &resultName, const int &pointSize, const float &r, const float &g, const float &b)
+void xjAlgorithm::ViewPartResult(ccPointCloud *cloud, const std::vector<CCVector3> &vPoint, 
+	const QString &resultName, const int &pointSize, const float &r, const float &g, const float &b)
 {
 	ccPointCloud *pcPR = new ccPointCloud(resultName);
 	if (!pcPR->reserveThePointsTable(vPoint.size()))
@@ -207,7 +208,8 @@ uint xjAlgorithm::xjGetIntensityByOTSU(ccPointCloud* cloud, const char *sf, cons
 }
 
 /* 短标线 short marking: 获取标线点 get traffic marking points */
-std::vector<CCVector3> xjAlgorithm::xjGetTrafficMarkingPoints(ccPointCloud* cloud, const char *sf, const uint &threshold, const bool &bCluster)
+std::vector<CCVector3> xjAlgorithm::xjGetTrafficMarkingPoints(ccPointCloud* cloud, const char *sf, 
+	const uint &threshold, const bool &bCluster)
 {
 	std::vector<CCVector3> vMarkingPoints;
 
@@ -501,4 +503,46 @@ std::vector<CCVector3> xjAlgorithm::xjMinimumBoundingRectangle(double &length, d
 
 	//结果
 	return xjMBRpoint;
+}
+
+
+/* ------------- */
+QMultiHash<int, xjPoint> xjAlgorithm::xjGridding(ccPointCloud *cloud, xjLasParameter &parameter)
+{
+	QMultiHash<int, xjPoint> mhGrid;
+	mhGrid.reserve(cloud->size());
+
+	CCVector3 bbMin, bbMax;
+	cloud->getBoundingBox(bbMin, bbMax);
+	parameter.sumRow = (int)((bbMax.y - bbMin.y) / parameter.GSD) + 1;
+	parameter.sumCol = (int)((bbMax.x - bbMin.x) / parameter.GSD) + 1;
+	parameter.sumLay = 1;
+	//parameter.sumLay = (int)((bbMax.z - bbMin.z) / parameter.GSD) + 1;
+	for (int i = 0; i < cloud->size(); i++)
+	{
+		xjPoint p;
+		p.x = cloud->getPoint(i)->x;
+		p.y = cloud->getPoint(i)->y;
+		p.z = cloud->getPoint(i)->z;
+
+		p.RowNumber = (int)((p.y - bbMin.y) / parameter.GSD) + 1;
+		p.ColNumber = (int)((p.x - bbMin.x) / parameter.GSD) + 1;
+		mhGrid.insert(((p.RowNumber - 1)*parameter.sumCol + p.ColNumber), p);
+	}
+
+	return mhGrid;
+}
+
+QMultiHash<int, xjGrid> xjAlgorithm::xjGridProperty(const QMultiHash<int, xjPoint> &mhGrid, xjLasParameter &parameter)
+{
+	QMultiHash<int, xjGrid> mhGridProperty;
+	mhGridProperty.reserve(parameter.sumRow*parameter.sumCol*parameter.sumLay);
+
+	for (QMultiHash<int, xjPoint>::const_iterator i = mhGrid.constBegin(); 
+		i != mhGrid.constEnd(); ++i)
+	{
+		QList<xjPoint> listP = mhGrid.values(i.key);
+	}
+	
+	return mhGridProperty;
 }
