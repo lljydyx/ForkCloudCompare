@@ -9,6 +9,8 @@
 #include <time.h>
 #include <limits>
 #include <iostream>
+#include <set>
+#include <stdlib.h>
 
 //GDAL
 #include <gdal.h>
@@ -18,6 +20,11 @@
 #include "ccPointCloud.h"
 #include "mainwindow.h"
 #include <ccScalarField.h>
+
+//eigen3
+#include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Eigenvalues>
+using namespace Eigen;
 
 class xjPoint
 {
@@ -36,6 +43,7 @@ public:
 	int Location;
 	int RowNumber;
 	int ColNumber;
+	int LayNumber;
 
 	xjPoint::xjPoint(void)
 	{
@@ -54,6 +62,7 @@ public:
 		Location = 0;
 		RowNumber = 0;
 		ColNumber = 0;
+		LayNumber = 0;
 	}
 
 
@@ -85,40 +94,9 @@ public:
 		Location = P.Location;
 		RowNumber = P.RowNumber;
 		ColNumber = P.ColNumber;
+		LayNumber = P.LayNumber;
 
 		return *this;
-	}
-
-	void setXYZ(double X, double Y, double Z)
-	{
-		x = X; y = Y; z = Z;
-	}
-
-	void setIntensity(int intensity)
-	{
-		Intensity = intensity;
-	}
-	void setPointSourceId(int PSId)
-	{
-		PointSourceID = PSId;
-	}
-	void setGPStime(double gpstime)
-	{
-		GPStime = gpstime;
-	}
-
-	void setRGB(int R, int G, int B)
-	{
-		r = R; g = G; b = B;
-	}
-
-	void setClassification(int classification)
-	{
-		Classification = classification;
-	}
-	void setUserData(int userData)
-	{
-		UserData = userData;
 	}
 };
 
@@ -126,19 +104,65 @@ class xjGrid
 {
 public:
 	int pointCount;
-	xjPoint maxP;
-	xjPoint minP;
+	float maxX;
+	float minX;
 	float deltaX;
+	float maxY;
+	float minY;
 	float deltaY;
+	float maxZ;
+	float minZ;
 	float deltaZ;
+
+	xjGrid::xjGrid(void)
+	{
+		pointCount = 0;
+		maxX = -666;
+		minX = 666;
+		deltaX = 0;
+		maxY = -666;
+		minY = 666;
+		deltaY = 0;
+		maxZ = -666;
+		minZ = 666;
+		deltaZ = 0;
+	}
+
+	xjGrid &operator =(const xjGrid &Grid)
+	{
+		pointCount = Grid.pointCount;
+		maxX = Grid.maxX;
+		minX = Grid.minX;
+		deltaX = Grid.deltaX;
+		maxY = Grid.minX;
+		minY = Grid.minY;
+		deltaY = Grid.deltaY;
+		maxZ = Grid.maxZ;
+		minZ = Grid.minZ;
+		deltaZ = Grid.deltaZ;
+
+		return *this;
+	}
 };
 
 struct xjLasParameter
 {
+	float maxX;
+	float minX;
+	float maxY;
+	float minY;
+	float maxZ;
+	float minZ;
+
 	float GSD;
+	bool bVoxel;
 	int sumRow;
 	int sumCol;
 	int sumLay;
+
+	int desnoseCount;
+	float thrSlope;
+	float thrDeltaZ;
 };
 
 class xjAlgorithm
@@ -157,7 +181,37 @@ public:
 	
 	
 	QMultiHash<int, xjPoint> xjGridding(ccPointCloud * cloud, xjLasParameter &parameter);
+
+	/* denoising */
+	void xjDenoising(QMultiHash<int, xjPoint>& mhGridding, xjLasParameter & parameter);
+
+	/* collection of grid number */
+	QMultiHash<int, int> xjGetGridNumber(const QMultiHash<int, xjPoint>& mhGridding, xjLasParameter & parameter);
+
+	/* cluster */
+	QList<QList<int>> xjCluster(const QMultiHash<int, int>& mhGridNumber, xjLasParameter & parameter);
+	//interation
+	void RegionGrowth(QList<int>& list, const int & cGridNumber, const int & sumCol, const QMultiHash<int, int>& mhGridNumber, QMultiHash<int, int>& mhKey);
+
 	QMultiHash<int, xjGrid> xjGridProperty(const QMultiHash<int, xjPoint>& mhGrid, xjLasParameter & parameter);
+
+	/* create ccPointCloud */
+	void xjCreatePointCloud(const QMultiHash<int, xjPoint>& mhGridding, xjLasParameter & parameter, ccPointCloud * newCloud);
+
+	/* 高程统计过滤 Elevation Statistical Filter */
+	QList<xjPoint> xjElevationStatisticalFilter(const QList<xjPoint>& listP, const xjLasParameter &parameter);
+
+	//获取行号和列号 get the row and column numbers based on the grid number
+	void GetRowAndCol(int & row, int & col, const int & gridNumber, const int & sumCol);
+
+	/* mean Z */
+	float xjMeanValue(const QList<xjPoint>& listP);
+
+	/* neighbourhood point */
+	float xjNeighbourhoodPoint(const QMultiHash<int, xjPoint>& mhGridding, xjLasParameter &parameter, const int & gn, const int & layer);
+
+	/* 特征值和特征向量 eigenvalue and eigenvector */
+	int xjEigenValueVectorShape(const QList<xjPoint>& listP, double &includedAngle);
 };
 
 #endif // !XJ_ALGORITHM

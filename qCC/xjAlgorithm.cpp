@@ -1,5 +1,5 @@
 #include "xjAlgorithm.h"
-
+class xjGrid;
 
 
 /* 短标线 short marking: view part result: ccPointCloud*/
@@ -507,65 +507,464 @@ std::vector<CCVector3> xjAlgorithm::xjMinimumBoundingRectangle(double &length, d
 
 
 /* ------------- */
-/* gridding */
+/* gridding voxel */
 QMultiHash<int, xjPoint> xjAlgorithm::xjGridding(ccPointCloud *cloud, xjLasParameter &parameter)
 {
-	QMultiHash<int, xjPoint> mhGrid;
-	mhGrid.reserve(cloud->size());
+	QMultiHash<int, xjPoint> mhGridding;
+	mhGridding.reserve(cloud->size());
 
 	CCVector3 bbMin, bbMax;
 	cloud->getBoundingBox(bbMin, bbMax);
+	parameter.maxX = bbMax.x;
+	parameter.minX = bbMin.x;
+	parameter.maxY = bbMax.y;
+	parameter.minY = bbMin.y;
+	parameter.maxZ = bbMax.z;
+	parameter.minZ = bbMin.z;
 	parameter.sumRow = (int)((bbMax.y - bbMin.y) / parameter.GSD) + 1;
 	parameter.sumCol = (int)((bbMax.x - bbMin.x) / parameter.GSD) + 1;
 	parameter.sumLay = 1;
-	//parameter.sumLay = (int)((bbMax.z - bbMin.z) / parameter.GSD) + 1;
+	if (parameter.bVoxel)
+	{
+		parameter.sumLay = (int)((bbMax.z - bbMin.z) / parameter.GSD) + 1;
+	}
+	
 	for (int i = 0; i < cloud->size(); i++)
 	{
 		xjPoint p;
 		p.x = cloud->getPoint(i)->x;
 		p.y = cloud->getPoint(i)->y;
 		p.z = cloud->getPoint(i)->z;
+		p.PID = i;
 
 		p.RowNumber = (int)((p.y - bbMin.y) / parameter.GSD) + 1;
 		p.ColNumber = (int)((p.x - bbMin.x) / parameter.GSD) + 1;
-		mhGrid.insert(((p.RowNumber - 1)*parameter.sumCol + p.ColNumber), p);
+		p.LayNumber = 1;
+		if (parameter.bVoxel)
+		{
+			p.LayNumber = (int)((p.z - bbMin.z) / parameter.GSD) + 1;
+		}
+		mhGridding.insert(((p.LayNumber - 1)*parameter.sumRow*parameter.sumCol + (p.RowNumber - 1)*parameter.sumCol + p.ColNumber), p);
 	}
 
-	return mhGrid;
+	return mhGridding;
 }
 
+/* denoising */
+void xjAlgorithm::xjDenoising(QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter)
+{
+	QMultiHash<int, xjPoint>::iterator i;
+	for (i = mhGridding.begin();i != mhGridding.end(); ++i)
+	{
+		if (mhGridding.values(i.key()).size() < parameter.desnoseCount)
+			mhGridding.remove(i.key());
+	}
+}
+
+/* collection of grid number */
+QMultiHash<int, int> xjAlgorithm::xjGetGridNumber(const QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter)
+{
+	QMultiHash<int, int> mhGN;
+
+	float thrZ = parameter.GSD* tan(3.1415926 * parameter.thrSlope / 180);
+
+	QMultiHash<int, int> mhKey;
+	for (QMultiHash<int, xjPoint>::const_iterator it = mhGridding.constBegin(); it != mhGridding.constEnd(); ++it)
+	{
+		int gn = it.key();
+		if (mhKey.contains(gn)) { continue; }
+		mhKey.insert(gn, gn);
+
+		/* elevation statistical filter */
+		QList<xjPoint> listP = mhGridding.values(it.key());
+		if (listP.size() < parameter.desnoseCount) { continue; }
+		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.z < b.z; });
+		//listPesf = xjElevationStatisticalFilter(listP, parameter);
+		float deltaZ = listP.at(listP.size() - 1).z - listP.at(0).z;
+
+		/* result */
+		if ((1 == 1)
+			&& (deltaZ < thrZ)
+			)
+		{
+			mhGN.insert(gn,gn);
+		}
+	}
+
+	return mhGN;
+}
+
+/* cluster */
+QList<QList<int>> xjAlgorithm::xjCluster(const QMultiHash<int,int> &mhGridNumber, xjLasParameter &parameter)
+{
+	QList<QList<int>> listCollection;
+
+	QMultiHash<int, int> mhKey;
+	for (QMultiHash<int, int>::const_iterator ind = mhGridNumber.constBegin(); ind != mhGridNumber.constEnd(); ++ind)
+	{
+		int cgn = ind.key();
+		if (mhKey.contains(cgn))
+			continue;
+		mhKey.insert(cgn, cgn);
+
+		// region growth
+		QList<int> list;
+		RegionGrowth(list, cgn, parameter.sumCol, mhGridNumber, mhKey);
+
+		//// expansion one layer
+		//if (list.size() > 1)
+		//{
+		//	int count = list.size();
+		//	for (int i = 0; i < count; i++)
+		//	{
+		//		int GridNumber = list.at(i);
+		//		int row = 0, col = 0;
+		//		GetRowAndCol(row, col, GridNumber, parameter.sumCol);
+
+		//		for (int r = row - 1; r <= row + 1; r++)
+		//		{
+		//			for (int c = col - 1; c <= col + 1; c++)
+		//			{
+		//				int gn = (r - 1)*parameter.sumCol + c;
+		//				if (!list.contains(gn))
+		//					list.append(gn);
+		//			}
+		//		}
+		//	}
+		//}
+
+		if (list.size() > 10)
+		{
+			listCollection.append(list);
+		}
+	}
+
+	qSort(listCollection.begin(), listCollection.end());
+
+	return listCollection;
+}
+//interation
+void xjAlgorithm::RegionGrowth(QList<int> &list, const int &cGridNumber, const int &sumCol, const QMultiHash<int, int> &mhGridNumber, QMultiHash<int, int> &mhKey)
+{
+	if (!list.contains(cGridNumber))
+		list.append(cGridNumber);
+
+	int row = 0, col = 0;
+	GetRowAndCol(row, col, cGridNumber, sumCol);
+
+	for (int r = row - 1; r < row + 2; r++)
+	{
+		for (int c = col - 1; c < col + 2; c++)
+		{
+			int gn = (r - 1)*sumCol + c;
+			if ((mhGridNumber.contains(gn)) && (!mhKey.contains(gn)))
+			{
+				list.append(gn);
+				mhKey.insert(gn, gn);
+
+				RegionGrowth(list, gn, sumCol, mhGridNumber, mhKey);
+			}
+		}
+	}
+}
+
+
+
+
+
 /* property of grid */
-QMultiHash<int, xjGrid> xjAlgorithm::xjGridProperty(const QMultiHash<int, xjPoint> &mhGrid, xjLasParameter &parameter)
+QMultiHash<int, xjGrid> xjAlgorithm::xjGridProperty(const QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter)
 {
 	QMultiHash<int, xjGrid> mhGridProperty;
 	mhGridProperty.reserve(parameter.sumRow*parameter.sumCol*parameter.sumLay);
 
-	for (QMultiHash<int, xjPoint>::const_iterator i = mhGrid.constBegin(); 
-		i != mhGrid.constEnd(); ++i)
+	for (QMultiHash<int, xjPoint>::const_iterator i = mhGridding.constBegin(); 
+		i != mhGridding.constEnd(); ++i)
 	{
-		QList<xjPoint> listP = mhGrid.values(i.key);
+		QList<xjPoint> listP = mhGridding.values(i.key());
 
 		xjGrid g;
 		g.pointCount = listP.size();
-		xjPoint maxP, minP;
 		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.x < b.x; });
-		maxP.x = listP.at(listP.size() - 1).x;
-		minP.x = listP.at(0).x;
+		g.maxX = listP.at(listP.size() - 1).x;
+		g.minX = listP.at(0).x;
 		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.y < b.y; });
-		maxP.y = listP.at(listP.size() - 1).y;
-		minP.y = listP.at(0).y;
+		g.maxY = listP.at(listP.size() - 1).y;
+		g.minY = listP.at(0).y;
 		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.z < b.z; });
-		maxP.z = listP.at(listP.size() - 1).z;
-		minP.z = listP.at(0).z;
-		g.maxP = maxP;
-		g.minP = minP;
-		g.deltaX = maxP.x - minP.x;
-		g.deltaY = maxP.y - minP.y;
-		g.deltaZ = maxP.z - minP.z;
+		g.maxZ = listP.at(listP.size() - 1).z;
+		g.minZ = listP.at(0).z;
+		g.deltaX = g.maxX - g.minX;
+		g.deltaY = g.maxY - g.minY;
+		g.deltaZ = g.maxZ - g.minZ;
 
-		mhGridProperty.insert(i.key, g);
+		mhGridProperty.insert(i.key(), g);
 	}
 	
 	return mhGridProperty;
 }
 
+/* create ccPointCloud */
+void xjAlgorithm::xjCreatePointCloud(const QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter,ccPointCloud *newCloud)
+{
+	float thrZ = parameter.GSD* tan(3.1415926 * parameter.thrSlope / 180);
+	int shape = 1;
+
+	QMultiHash<int, int> mhKey;
+	for (QMultiHash<int, xjPoint>::const_iterator it = mhGridding.constBegin(); it != mhGridding.constEnd(); ++it)
+	{
+		int gn = it.key();
+		if (mhKey.contains(gn)) { continue; }
+		mhKey.insert(gn, gn);
+
+		/* row col number */
+		int row = 0, col = 0;
+		GetRowAndCol(row, col, gn, parameter.sumCol);
+		float cx = parameter.minX + parameter.GSD*(col - 0.5);
+		float cy = parameter.minY + parameter.GSD*(row - 0.5);
+
+		/* elevation statistical filter */
+		QList<xjPoint> listP = mhGridding.values(it.key());
+		if (listP.size() < parameter.desnoseCount) { continue; }
+		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.z < b.z; });
+		//listPesf = xjElevationStatisticalFilter(listP, parameter);
+		float deltaZ = listP.at(listP.size() - 1).z - listP.at(0).z;
+
+
+		///* 邻域最低点 + thrZ */
+		//QList<xjPoint> listPslope;
+		//float minZ = xjNeighbourhoodPoint(mhGridding, parameter, gn, 2);
+		//for (int i = 0; i < listP.size(); i++)
+		//{
+		//	if ((listP.at(i).z - minZ) < thrZ)
+		//		listPslope.append(listP.at(i));
+		//	else
+		//		break;
+		//}
+		//if (listPslope.size() < parameter.desnoseCount) { continue; }
+
+
+		/* shape: line plane sphere */
+		//double includedAngle = 0;
+		//int shape = xjEigenValueVectorShape(listP, includedAngle);
+
+
+		/* result */
+		if ((1==1)
+			//&& (shape == 2)
+			//&& (includedAngle<20)
+			&& (deltaZ < thrZ)
+			)
+		{
+			for (int j = 0; j < listP.size(); j++)
+			{
+				newCloud->addPoint(CCVector3(listP.at(j).x, listP.at(j).y, listP.at(j).z));
+			}
+		}
+		//{
+		//	newCloud->addPoint(CCVector3(cx, cy, listP.at(0).z));
+		//}
+	}
+}
+
+/* 高程统计过滤 Elevation Statistical Filter */
+QList<xjPoint> xjAlgorithm::xjElevationStatisticalFilter(const QList<xjPoint> &listP, const xjLasParameter &parameter)
+{
+	float deltaZ = listP.at(listP.size() - 1).z - listP.at(0).z;
+	int sumLayer = int(deltaZ / parameter.GSD) + 1;
+
+	QMultiHash<int, xjPoint> mhGroup;
+	mhGroup.reserve(listP.size());
+	int group = 0;
+	for (int i = 0; i < listP.size(); i++)
+	{
+		group = int((listP.at(i).z - listP.at(0).z) / parameter.GSD) + 1;
+		mhGroup.insert(group, listP.at(i));
+	}
+
+	for (int i = 1; i <= sumLayer; i++)
+	{
+		if (mhGroup.values(i).size() < parameter.desnoseCount)
+			mhGroup.remove(i);
+		else
+			break;
+	}
+	for (int i = sumLayer; i > 0; i--)
+	{
+		if (mhGroup.values(i).size() < parameter.desnoseCount)
+			mhGroup.remove(i);
+		else
+			break;
+	}
+
+	QList<xjPoint> listPesf;
+	for (int i = 1; i <= sumLayer; i++)
+	{
+		if (mhGroup.contains(i))
+		{
+			for (int j = 0; j < mhGroup.values(i).size(); j++)
+			{
+				listPesf.append(mhGroup.values(i).at(j));
+			}
+		}
+	}
+
+	return listPesf;
+}
+
+//获取行号和列号 get the row and column numbers based on the grid number
+void xjAlgorithm::GetRowAndCol(int &row,int &col, const int &gridNumber, const int &sumCol)
+{
+	if (gridNumber <= sumCol)
+	{
+		row = 1;
+		col = gridNumber;
+	}
+	else
+	{
+		int Quotient = (int)(gridNumber / sumCol);
+		int Remainder = gridNumber % sumCol;//余数
+		if (Remainder == 0)
+		{
+			row = Quotient;
+			col = sumCol;
+		}
+		else
+		{
+			row = Quotient + 1;
+			col = Remainder;
+		}
+	}
+}
+
+/* mean Z */
+float xjAlgorithm::xjMeanValue(const QList<xjPoint> &listP)
+{
+	float mean = 0.1f;
+	for (int i = 0; i < listP.size(); i++)
+	{
+		mean += listP.at(i).z;
+	}
+	mean /= listP.size();
+
+	return mean;
+}
+
+/* neighborhood point */
+float xjAlgorithm::xjNeighbourhoodPoint(const QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter, const int &gn, const int &layer)
+{
+	float minZ=666666;
+
+	int row = 0, col = 0;
+	GetRowAndCol(row, col, gn, parameter.sumCol);
+	for (int r = row-layer; r <=row+layer; r++)
+	{
+		for (int c = col - layer; c <= col + layer; c++)
+		{
+			int gn = (r - 1)*parameter.sumCol + c;
+			if (mhGridding.contains(gn))
+			{
+				QList<xjPoint> listP = mhGridding.values(gn);
+				qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.z < b.z; });
+				if (listP.at(0).z<minZ)
+				{
+					minZ = listP.at(0).z;
+				}
+			}
+		}
+	}
+
+	return minZ;
+}
+
+/* 特征值和特征向量 eigenvalue and eigenvector */
+int xjAlgorithm::xjEigenValueVectorShape(const QList<xjPoint> &listP,double &includedAngle)
+{
+	int shape = 1;
+
+	double sumX = 0, sumY = 0, sumZ = 0;
+	double meanX = 0, meanY = 0, meanZ = 0;
+	double matXX = 0, matYY = 0, matZZ = 0;
+	double matXY = 0, matXZ = 0, matYZ = 0;
+	int count = listP.size();
+	for (int i = 0; i < count; i++)
+	{
+		sumX += listP.at(i).x;
+		sumY += listP.at(i).y;
+		sumZ += listP.at(i).z;
+
+		matXX += listP.at(i).x * listP.at(i).x;
+		matYY += listP.at(i).y * listP.at(i).y;
+		matZZ += listP.at(i).z * listP.at(i).z;
+
+		matXY += listP.at(i).x * listP.at(i).y;
+		matXZ += listP.at(i).x * listP.at(i).z;
+		matYZ += listP.at(i).y * listP.at(i).z;
+	}
+
+	meanX = sumX / count;
+	meanY = sumY / count;
+	meanZ = sumZ / count;
+	matXX /= count;
+	matYY /= count;
+	matZZ /= count;
+	matXY /= count;
+	matXZ /= count;
+	matYZ /= count;
+
+	/* ------------------ */
+	Matrix3d eMat;
+	eMat(0, 0) = matXX - meanX * meanX; eMat(0, 1) = matXY - meanX * meanY; eMat(0, 2) = matXZ - meanX * meanZ;
+	eMat(1, 0) = matXY - meanX * meanY; eMat(1, 1) = matYY - meanY * meanY; eMat(1, 2) = matYZ - meanY * meanZ;
+	eMat(2, 0) = matXZ - meanX * meanZ; eMat(2, 1) = matYZ - meanY * meanZ; eMat(2, 2) = matZZ - meanZ * meanZ;
+
+	Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
+	Matrix3d eValue = xjMat.pseudoEigenvalueMatrix();
+	Matrix3d eVector = xjMat.pseudoEigenvectors();
+	double v1 = eValue(0, 0);
+	double v2 = eValue(1, 1);
+	double v3 = eValue(2, 2);
+
+	//eigenvalue
+	QList<float> listEV;
+	listEV << v1 << v2 << v3;
+	qSort(listEV.begin(), listEV.end());//从小到大
+	v1 = listEV.at(2);
+	v2 = listEV.at(1);
+	v3 = listEV.at(0);
+
+	//calculate
+	double a1 = (std::sqrt(v1) - std::sqrt(v2)) / std::sqrt(v1);
+	double a2 = (std::sqrt(v2) - std::sqrt(v3)) / std::sqrt(v1);
+	double a3 = std::sqrt(v3 / v1);
+	if ((a2 >= a1) && (a2 >= a3)) { shape = 2; }
+	if ((a3 >= a1) && (a3 >= a2)) { shape = 3; }
+
+	//normal
+	int minNumber = 0;
+	if ((abs(v2) <= abs(v1)) && (abs(v2) <= abs(v3)))
+	{
+		minNumber = 1;
+	}
+	if ((abs(v3) <= abs(v1)) && (abs(v3) <= abs(v2)))
+	{
+		minNumber = 2;
+	}
+	double A = eVector(0, minNumber);
+	double B = eVector(1, minNumber);
+	double C = eVector(2, minNumber);
+	double D = -(A*meanX + B * meanY + C * meanZ);
+	if (C < 0)
+	{
+		A *= -1;
+		B *= -1;
+		C *= -1;
+		D *= -1;
+	}
+
+	//angle
+	double angle = (180.0 / 3.1415926)*acos(C / (sqrt(A*A + B * B + C * C)));
+	includedAngle = abs(angle - 90);
+
+	return shape;
+}

@@ -11036,13 +11036,13 @@ void MainWindow::on_actionExtractTrafficMarking_triggered()
 				/* convex hull */
 				std::vector<CCVector3> vCHpoint = xjal->xjGetConvexHullByGrahamScan(vMarkingPoints);
 				double areaCH = xjal->ComputePolygonArea(vCHpoint);
-				xjal->ViewPartResult(cloud, vCHpoint, "CH", 6, 0, 1.0f, 0);
+				//xjal->ViewPartResult(cloud, vCHpoint, "CH", 6, 0, 1.0f, 0);
 
 				/* MBR */
 				double length = 0, width = 0;
 				std::vector<CCVector3> vMBRpoint = xjal->xjMinimumBoundingRectangle(length, width, vCHpoint);
-				xjal->ViewPartResult(cloud, vMBRpoint, "MBR",8, 1.0f, 1.0f, 1.0f);
-				xjal->ViewPartResultShp(vMBRpoint, cloud->getName());
+				//xjal->ViewPartResult(cloud, vMBRpoint, "MBR",8, 1.0f, 1.0f, 1.0f);
+				//xjal->ViewPartResultShp(vMBRpoint, cloud->getName());
 				
 				ccLog::Print(cloud->getName()
 					+"  threshold=" + QString::number(threshold)
@@ -11067,6 +11067,10 @@ void MainWindow::on_actionExtractTrafficMarking_triggered()
 /* ≤‚ ‘ */
 void MainWindow::on_actionDoTest_triggered()
 {
+	ccProgressDialog pDlg(false, this);
+	pDlg.setAutoClose(false);
+	pDlg.setMethodTitle(tr("disposing"));
+
 	xjAlgorithm *xjal = new xjAlgorithm();
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
 	for (ccHObject *entity : selectedEntities)
@@ -11077,12 +11081,47 @@ void MainWindow::on_actionDoTest_triggered()
 			if (cloud)
 			{
 				/* To do... */
+				xjLasParameter parameter;
+				parameter.GSD = 0.3;
+				parameter.bVoxel = false;
+				parameter.desnoseCount = 5;
+				parameter.thrSlope = 45;
+				parameter.thrDeltaZ = 0.2;
+				
+				QMultiHash<int, xjPoint> mhGridding = xjal->xjGridding(cloud, parameter);
 
+				QMultiHash<int, int> mhGN = xjal->xjGetGridNumber(mhGridding, parameter);
 
-				ccLog::Print(cloud->getName());
+				QList<QList<int>> listGrid = xjal->xjCluster(mhGN, parameter);
 
+				for (int i = 0; i < listGrid.size(); i++)
+				{
+					ccPointCloud *resultPC = new ccPointCloud("RS_"+QString::number(i));
 
+					QList<int> listGN = listGrid.at(i);
+					for (int j = 0; j < listGN.size(); j++)
+					{
+						int gn = listGN.at(j);
+						for (int k = 0; k < mhGridding.values(gn).size(); k++)
+						{
+							resultPC->addPoint(CCVector3(mhGridding.values(gn).at(k).x, mhGridding.values(gn).at(k).y, mhGridding.values(gn).at(k).z));
+						}
+					}
 
+					resultPC->setGlobalShift(cloud->getGlobalShift());
+					resultPC->setGlobalScale(cloud->getGlobalScale());
+					ccColor::Rgb col = ccColor::Generator::Random();
+					resultPC->setColor(col);
+					resultPC->showColors(true);
+					resultPC->setPointSize(3);
+					resultPC->setDisplay(cloud->getDisplay());
+					resultPC->prepareDisplayForRefresh();
+					resultPC->refreshDisplay();
+
+					addToDB(resultPC);
+					setSelectedInDB(resultPC, true);
+					refreshAll();
+				}
 			}
 		}
 	}
