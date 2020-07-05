@@ -507,6 +507,7 @@ std::vector<CCVector3> xjAlgorithm::xjMinimumBoundingRectangle(double &length, d
 
 
 /* ------------- */
+/* gridding */
 QMultiHash<int, xjPoint> xjAlgorithm::xjGridding(ccPointCloud *cloud, xjLasParameter &parameter)
 {
 	QMultiHash<int, xjPoint> mhGrid;
@@ -533,6 +534,7 @@ QMultiHash<int, xjPoint> xjAlgorithm::xjGridding(ccPointCloud *cloud, xjLasParam
 	return mhGrid;
 }
 
+/* property of grid */
 QMultiHash<int, xjGrid> xjAlgorithm::xjGridProperty(const QMultiHash<int, xjPoint> &mhGrid, xjLasParameter &parameter)
 {
 	QMultiHash<int, xjGrid> mhGridProperty;
@@ -542,7 +544,28 @@ QMultiHash<int, xjGrid> xjAlgorithm::xjGridProperty(const QMultiHash<int, xjPoin
 		i != mhGrid.constEnd(); ++i)
 	{
 		QList<xjPoint> listP = mhGrid.values(i.key);
+
+		xjGrid g;
+		g.pointCount = listP.size();
+		xjPoint maxP, minP;
+		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.x < b.x; });
+		maxP.x = listP.at(listP.size() - 1).x;
+		minP.x = listP.at(0).x;
+		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.y < b.y; });
+		maxP.y = listP.at(listP.size() - 1).y;
+		minP.y = listP.at(0).y;
+		qSort(listP.begin(), listP.end(), [](const xjPoint &a, const xjPoint &b) {return a.z < b.z; });
+		maxP.z = listP.at(listP.size() - 1).z;
+		minP.z = listP.at(0).z;
+		g.maxP = maxP;
+		g.minP = minP;
+		g.deltaX = maxP.x - minP.x;
+		g.deltaY = maxP.y - minP.y;
+		g.deltaZ = maxP.z - minP.z;
+
+		mhGridProperty.insert(i.key, g);
 	}
 	
 	return mhGridProperty;
 }
+

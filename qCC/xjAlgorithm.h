@@ -128,11 +128,9 @@ public:
 	int pointCount;
 	xjPoint maxP;
 	xjPoint minP;
-
-	xjGrid::xjGrid(void)
-	{
-		pointCount = 0;
-	}
+	float deltaX;
+	float deltaY;
+	float deltaZ;
 };
 
 struct xjLasParameter
