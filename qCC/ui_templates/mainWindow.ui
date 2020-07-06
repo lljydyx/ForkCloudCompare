@@ -701,6 +701,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionPrimitiveFactory"/>
    <addaction name="actionRasterize"/>
    <addaction name="actionSORFilter"/>
+   <addaction name="actionRSE"/>
    <addaction name="actionDoTest"/>
    <addaction name="separator"/>
    <addaction name="actionSegment"/>
@@ -3082,6 +3083,18 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>测试</string>
+   </property>
+  </action>
+  <action name="actionRSE">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/xjRSE.png</normaloff>:/CC/images/xjRSE.png</iconset>
+   </property>
+   <property name="text">
+    <string>road surface extract</string>
+   </property>
+   <property name="toolTip">
+    <string>路面点云检测</string>
    </property>
   </action>
  </widget>
