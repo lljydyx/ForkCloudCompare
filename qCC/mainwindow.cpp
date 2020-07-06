@@ -11064,12 +11064,13 @@ void MainWindow::on_actionExtractTrafficMarking_triggered()
 	xjal = nullptr;
 }
 
-/* ≤‚ ‘ */
-void MainWindow::on_actionDoTest_triggered()
+/* ¬∑√Êµ„‘∆ºÏ≤‚ road surface extract */
+void MainWindow::on_actionRSE_triggered()
 {
 	ccProgressDialog pDlg(false, this);
-	pDlg.setAutoClose(false);
-	pDlg.setMethodTitle(tr("disposing"));
+	pDlg.setAutoClose(true);
+	pDlg.setMethodTitle("road surface extract...");
+	pDlg.start();
 
 	xjAlgorithm *xjal = new xjAlgorithm();
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
@@ -11087,16 +11088,18 @@ void MainWindow::on_actionDoTest_triggered()
 				parameter.desnoseCount = 5;
 				parameter.thrSlope = 45;
 				parameter.thrDeltaZ = 0.2;
-				
+
 				QMultiHash<int, xjPoint> mhGridding = xjal->xjGridding(cloud, parameter);
 
 				QMultiHash<int, int> mhGN = xjal->xjGetGridNumber(mhGridding, parameter);
 
 				QList<QList<int>> listGrid = xjal->xjCluster(mhGN, parameter);
 
+				//add new group to DB/display
+				ccHObject* cloudContainer = new ccHObject(cloud->getName() + QString("_RSE"));
 				for (int i = 0; i < listGrid.size(); i++)
 				{
-					ccPointCloud *resultPC = new ccPointCloud("RS_"+QString::number(i));
+					ccPointCloud *resultPC = new ccPointCloud("RS_" + QString::number(i));
 
 					QList<int> listGN = listGrid.at(i);
 					for (int j = 0; j < listGN.size(); j++)
@@ -11114,14 +11117,39 @@ void MainWindow::on_actionDoTest_triggered()
 					resultPC->setColor(col);
 					resultPC->showColors(true);
 					resultPC->setPointSize(3);
-					resultPC->setDisplay(cloud->getDisplay());
-					resultPC->prepareDisplayForRefresh();
-					resultPC->refreshDisplay();
-
-					addToDB(resultPC);
-					setSelectedInDB(resultPC, true);
-					refreshAll();
+					cloudContainer->addChild(resultPC);
 				}
+				
+				addToDB(cloudContainer);
+
+				mhGridding.clear();
+				mhGN.clear();
+				listGrid.clear();
+			}
+		}
+	}
+	refreshAll();
+	updateUI();
+
+	delete xjal;
+	xjal = nullptr;
+
+	ccLog::Print("[RSE] OK");
+}
+
+/* ≤‚ ‘ */
+void MainWindow::on_actionDoTest_triggered()
+{
+	xjAlgorithm *xjal = new xjAlgorithm();
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* To do... */
 			}
 		}
 	}

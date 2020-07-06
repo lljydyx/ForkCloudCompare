@@ -322,6 +322,8 @@ private slots:
 
 	/* 提取交通标线 extract traffic marking */
 	void on_actionExtractTrafficMarking_triggered();
+	/* 路面点云检测 road surface extract */
+	void on_actionRSE_triggered();
 	/* 测试 */
 	void on_actionDoTest_triggered();
 
