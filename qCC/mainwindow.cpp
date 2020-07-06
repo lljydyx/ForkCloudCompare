@@ -11119,7 +11119,7 @@ void MainWindow::on_actionRSE_triggered()
 					resultPC->setPointSize(3);
 					cloudContainer->addChild(resultPC);
 				}
-				
+
 				addToDB(cloudContainer);
 
 				mhGridding.clear();
