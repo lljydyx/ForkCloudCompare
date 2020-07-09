@@ -204,7 +204,7 @@ MainWindow::MainWindow()
 {
 	m_UI->setupUi( this );
 
-	setWindowTitle(QStringLiteral("累了就要打游戏   CloudCompare v") + ccApp->versionLongStr(false));
+	setWindowTitle(tr("累了就要打游戏   CloudCompare v") + ccApp->versionLongStr(false));
 	
 	m_pluginUIManager = new ccPluginUIManager( this, this );
 	
@@ -7937,6 +7937,7 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 			double rms = 0.0;
 			CCVector3 C;
 			CCVector3 N;
+			const PointCoordinateType *m_PlaneEquation = new PointCoordinateType[4];
 
 			ccHObject* plane = nullptr;
 			if (fitFacet)
@@ -7970,6 +7971,7 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 					N = pPlane->getNormal();
 					C = *CCLib::Neighbourhood(cloud).getGravityCenter();
 					pPlane->enableStippling(true);
+					m_PlaneEquation = pPlane->getEquation();
 				}
 			}
 
@@ -7985,6 +7987,8 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 				if (N.z < 0.0)
 					N *= -1.0;
 				ccConsole::Print("\t- normal: (%f,%f,%f)", N.x, N.y, N.z);
+				ccConsole::Print("\t- center: (%f,%f,%f)", C.x, C.y, C.z);
+				ccConsole::Print("\t- A-B-C-D: (%f, %f, %f, %f)", m_PlaneEquation[0], m_PlaneEquation[1], m_PlaneEquation[2], -m_PlaneEquation[3]);
 
 				//we compute strike & dip by the way
 				PointCoordinateType dip = 0.0f;
@@ -11073,6 +11077,7 @@ void MainWindow::on_actionRSE_triggered()
 	pDlg.start();
 
 	xjAlgorithm *xjal = new xjAlgorithm();
+	QStringList xjListResult;
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
 	for (ccHObject *entity : selectedEntities)
 	{
@@ -11083,9 +11088,9 @@ void MainWindow::on_actionRSE_triggered()
 			{
 				/* To do... */
 				xjLasParameter parameter;
-				parameter.GSD = 0.3;
+				parameter.GSD = 0.2;
 				parameter.bVoxel = false;
-				parameter.desnoseCount = 5;
+				parameter.desnoseCount = 10;
 				parameter.thrSlope = 45;
 				parameter.thrDeltaZ = 0.2;
 
@@ -11137,10 +11142,16 @@ void MainWindow::on_actionRSE_triggered()
 	ccLog::Print("[RSE] OK");
 }
 
-/* 测试 */
-void MainWindow::on_actionDoTest_triggered()
+/* 点云生闭合矢量线 Point clouds are connected in order to generate closed vector lines. */
+void MainWindow::on_actionPCtoPolyline_triggered()
 {
+	ccProgressDialog pDlg(false, this);
+	pDlg.setAutoClose(true);
+	pDlg.setMethodTitle("...");
+	pDlg.start();
+
 	xjAlgorithm *xjal = new xjAlgorithm();
+	QStringList xjList;
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
 	for (ccHObject *entity : selectedEntities)
 	{
@@ -11150,9 +11161,64 @@ void MainWindow::on_actionDoTest_triggered()
 			if (cloud)
 			{
 				/* To do... */
+				QString cloudName = cloud->getName();
+				if (cloudName.contains(" - Cloud"))
+					cloudName = cloudName.left(cloudName.length() - 8);
+
+				QString shpPath = QCoreApplication::applicationDirPath() + "/test/" + cloudName + ".shp";
+				bool b = xjal->xjCreatePolyline(cloud, shpPath);
+
+				if (b)
+					xjList.append(shpPath);
+
+				ccLog::Print(shpPath + " [create shape] OK");
 			}
 		}
 	}
+
+	addToDB(xjList, 0, 0);
+	refreshAll();
+	updateUI();
+
+	delete xjal;
+	xjal = nullptr;
+}
+
+/* 测试 */
+void MainWindow::on_actionDoTest_triggered()
+{
+	ccProgressDialog pDlg(false, this);
+	pDlg.setAutoClose(true);
+	pDlg.setMethodTitle("...");
+	pDlg.start();
+
+	xjAlgorithm *xjal = new xjAlgorithm();
+	QStringList xjList;
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* To do... */
+				QString cloudName = cloud->getName();
+				if (cloudName.contains(" - Cloud"))
+					cloudName = cloudName.left(cloudName.length() - 8);
+
+				//QString shpPath = QCoreApplication::applicationDirPath()+ "/test/" + cloudName + ".shp";
+				//bool b = xjal->xjCreatePolyline(cloud, shpPath);
+
+				//if (b)
+				//	xjList.append(shpPath);
+
+				//ccLog::Print(shpPath +" [create shape] OK");
+			}
+		}
+	}
+	
+	addToDB(xjList, 0, 0);
 	refreshAll();
 	updateUI();
 

@@ -18,8 +18,11 @@
 #ifndef CC_MAIN_WINDOW_HEADER
 #define CC_MAIN_WINDOW_HEADER
 
+#pragma execution_character_set("utf-8")
+
 //Qt
 #include <QMainWindow>
+#include <QCoreApplication>
 
 //Local
 #include "ccEntityAction.h"
@@ -324,6 +327,8 @@ private slots:
 	void on_actionExtractTrafficMarking_triggered();
 	/* 路面点云检测 road surface extract */
 	void on_actionRSE_triggered();
+	/* 点云生闭合矢量线 Point clouds are connected in order to generate closed vector lines. */
+	void on_actionPCtoPolyline_triggered();
 	/* 测试 */
 	void on_actionDoTest_triggered();
 

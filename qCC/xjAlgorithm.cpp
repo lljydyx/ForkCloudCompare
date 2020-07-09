@@ -947,3 +947,55 @@ void xjAlgorithm::xjCreatePointCloud(const QMultiHash<int, xjPoint> &mhGridding,
 		//}
 	}
 }
+
+
+/* ---------- GDAL ---------- */
+/* create polyline */
+bool xjAlgorithm::xjCreatePolyline(ccPointCloud* cloud, const QString &shpPath)
+{
+	GDALAllRegister();
+	OGRRegisterAll();
+	const char *xjDriverName = "ESRI Shapefile";
+	GDALDriver *xjDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(xjDriverName);
+	if (xjDriver == NULL) { return false; }
+
+	GDALDataset *xjDataset = xjDriver->Create(shpPath.toStdString().c_str(), 0, 0, 0, GDT_Unknown, NULL);
+	if (xjDataset == NULL) { return false; }
+
+	OGRLayer *xjLayer = xjDataset->CreateLayer("point_out", NULL, wkbLineStringZM, NULL);
+	if (xjLayer == NULL) { return false; }
+
+	//创建属性字段
+	OGRFieldDefn fieldID("ID", OFTInteger);
+	fieldID.SetWidth(32);
+	xjLayer->CreateField(&fieldID);
+	OGRFieldDefn fieldNAME("NAME", OFTString);
+	fieldNAME.SetWidth(32);
+	xjLayer->CreateField(&fieldNAME);
+	OGRFieldDefn fieldLENGTH("LENGTH", OFTReal);
+	fieldLENGTH.SetPrecision(16);
+	xjLayer->CreateField(&fieldLENGTH);
+
+	//创建要素
+	OGRFeature *xjFeature = OGRFeature::CreateFeature(xjLayer->GetLayerDefn());
+	OGRLineString xjLine;
+	for (int i = 0; i < cloud->size(); i++)
+	{
+		OGRPoint pt(cloud->getPoint(i)->x, cloud->getPoint(i)->y, cloud->getPoint(i)->z);
+		xjLine.addPoint(&pt);
+
+		///* test */
+		//cloud->getScalarFieldIndexByName("Intensity");
+	}
+	OGRPoint pt0(cloud->getPoint(0)->x, cloud->getPoint(0)->y, cloud->getPoint(0)->z);
+	xjLine.addPoint(&pt0);
+	xjFeature->SetGeometry(&xjLine);
+
+	//判断
+	if (xjLayer->CreateFeature(xjFeature) != OGRERR_NONE) { return false; }
+	OGRFeature::DestroyFeature(xjFeature);
+
+	GDALClose(xjDataset);
+
+	return true;
+}

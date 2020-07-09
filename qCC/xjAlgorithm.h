@@ -1,6 +1,8 @@
 #ifndef XJ_ALGORITHM
 #define XJ_ALGORITHM
 
+#pragma execution_character_set("utf-8")
+
 //system
 #include <set>
 #include <vector>
@@ -212,6 +214,9 @@ public:
 
 	/* 特征值和特征向量 eigenvalue and eigenvector */
 	int xjEigenValueVectorShape(const QList<xjPoint>& listP, double &includedAngle);
+
+	/* create polyline */
+	bool xjCreatePolyline(ccPointCloud * cloud, const QString & shpPath);
 };
 
 #endif // !XJ_ALGORITHM
