@@ -11079,6 +11079,7 @@ void MainWindow::on_actionRSE_triggered()
 	xjAlgorithm *xjal = new xjAlgorithm();
 	QStringList xjListResult;
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	ccHObject* resultContainer = new ccHObject("Road Surface");
 	for (ccHObject *entity : selectedEntities)
 	{
 		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
@@ -11088,23 +11089,24 @@ void MainWindow::on_actionRSE_triggered()
 			{
 				/* To do... */
 				xjLasParameter parameter;
-				parameter.GSD = 0.2;
+				parameter.GSD = 0.3;
 				parameter.bVoxel = false;
 				parameter.desnoseCount = 10;
 				parameter.thrSlope = 45;
 				parameter.thrDeltaZ = 0.2;
+				parameter.clusterCount = 3;
 
 				QMultiHash<int, xjPoint> mhGridding = xjal->xjGridding(cloud, parameter);
+
+				xjal->xjDenoising(mhGridding, parameter);
 
 				QMultiHash<int, int> mhGN = xjal->xjGetGridNumber(mhGridding, parameter);
 
 				QList<QList<int>> listGrid = xjal->xjCluster(mhGN, parameter);
 
-				//add new group to DB/display
-				ccHObject* cloudContainer = new ccHObject(cloud->getName() + QString("_RSE"));
-				for (int i = 0; i < listGrid.size(); i++)
+				for (int i = 0; i < 1/*listGrid.size()*/; i++)
 				{
-					ccPointCloud *resultPC = new ccPointCloud("RS_" + QString::number(i));
+					ccPointCloud *resultPC = new ccPointCloud(cloud->getName() + "_RS_" + QString::number(i));
 
 					QList<int> listGN = listGrid.at(i);
 					for (int j = 0; j < listGN.size(); j++)
@@ -11119,20 +11121,20 @@ void MainWindow::on_actionRSE_triggered()
 					resultPC->setGlobalShift(cloud->getGlobalShift());
 					resultPC->setGlobalScale(cloud->getGlobalScale());
 					ccColor::Rgb col = ccColor::Generator::Random();
-					resultPC->setColor(col);
+					resultPC->setColor(0, 255, 0);
+					if (i != 0) { resultPC->setColor(col);}
 					resultPC->showColors(true);
-					resultPC->setPointSize(3);
-					cloudContainer->addChild(resultPC);
+					resultPC->setPointSize(5);
+					resultContainer->addChild(resultPC);
 				}
-
-				addToDB(cloudContainer);
-
 				mhGridding.clear();
 				mhGN.clear();
 				listGrid.clear();
 			}
 		}
 	}
+
+	addToDB(resultContainer);
 	refreshAll();
 	updateUI();
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1063</width>
-    <height>563</height>
+    <width>1423</width>
+    <height>806</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,7 +38,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1063</width>
+     <width>1423</width>
      <height>23</height>
     </rect>
    </property>
@@ -701,7 +701,6 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionPrimitiveFactory"/>
    <addaction name="actionRasterize"/>
    <addaction name="actionSORFilter"/>
-   <addaction name="actionDoTest"/>
    <addaction name="separator"/>
    <addaction name="actionSegment"/>
    <addaction name="actionTranslateRotate"/>
@@ -794,6 +793,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionDoTest"/>
    <addaction name="actionRSE"/>
    <addaction name="actionPCtoPolyline"/>
   </widget>

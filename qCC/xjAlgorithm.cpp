@@ -582,9 +582,14 @@ QMultiHash<int, int> xjAlgorithm::xjGetGridNumber(const QMultiHash<int, xjPoint>
 		//listPesf = xjElevationStatisticalFilter(listP, parameter);
 		float deltaZ = listP.at(listP.size() - 1).z - listP.at(0).z;
 
+		/* distinguish shape */
+		double includedAngle = 0;
+		int shape = xjEigenValueVectorShape(listP, includedAngle);
+
 		/* result */
 		if ((1 == 1)
 			&& (deltaZ < thrZ)
+			&& (shape ==2)
 			)
 		{
 			mhGN.insert(gn,gn);
@@ -592,6 +597,98 @@ QMultiHash<int, int> xjAlgorithm::xjGetGridNumber(const QMultiHash<int, xjPoint>
 	}
 
 	return mhGN;
+}
+
+/* 特征值和特征向量 eigenvalue and eigenvector */
+int xjAlgorithm::xjEigenValueVectorShape(const QList<xjPoint> &listP, double &includedAngle)
+{
+	int shape = 1;
+
+	double sumX = 0, sumY = 0, sumZ = 0;
+	double meanX = 0, meanY = 0, meanZ = 0;
+	double matXX = 0, matYY = 0, matZZ = 0;
+	double matXY = 0, matXZ = 0, matYZ = 0;
+	int count = listP.size();
+	for (int i = 0; i < count; i++)
+	{
+		sumX += listP.at(i).x;
+		sumY += listP.at(i).y;
+		sumZ += listP.at(i).z;
+
+		matXX += listP.at(i).x * listP.at(i).x;
+		matYY += listP.at(i).y * listP.at(i).y;
+		matZZ += listP.at(i).z * listP.at(i).z;
+
+		matXY += listP.at(i).x * listP.at(i).y;
+		matXZ += listP.at(i).x * listP.at(i).z;
+		matYZ += listP.at(i).y * listP.at(i).z;
+	}
+
+	meanX = sumX / count;
+	meanY = sumY / count;
+	meanZ = sumZ / count;
+	matXX /= count;
+	matYY /= count;
+	matZZ /= count;
+	matXY /= count;
+	matXZ /= count;
+	matYZ /= count;
+
+	/* 协方差矩阵 */
+	Matrix3d eMat;
+	eMat(0, 0) = matXX - meanX * meanX; eMat(0, 1) = matXY - meanX * meanY; eMat(0, 2) = matXZ - meanX * meanZ;
+	eMat(1, 0) = matXY - meanX * meanY; eMat(1, 1) = matYY - meanY * meanY; eMat(1, 2) = matYZ - meanY * meanZ;
+	eMat(2, 0) = matXZ - meanX * meanZ; eMat(2, 1) = matYZ - meanY * meanZ; eMat(2, 2) = matZZ - meanZ * meanZ;
+
+	/* 特征值和特征向量 */
+	Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
+	Matrix3d eValue = xjMat.pseudoEigenvalueMatrix();
+	Matrix3d eVector = xjMat.pseudoEigenvectors();
+	double v1 = eValue(0, 0);
+	double v2 = eValue(1, 1);
+	double v3 = eValue(2, 2);
+	//eigenvalue
+	QList<float> listEV;
+	listEV << v1 << v2 << v3;
+	qSort(listEV.begin(), listEV.end());//从小到大
+	v1 = listEV.at(2);
+	v2 = listEV.at(1);
+	v3 = listEV.at(0);
+	//calculate
+	double a1 = (std::sqrt(v1) - std::sqrt(v2)) / std::sqrt(v1);
+	double a2 = (std::sqrt(v2) - std::sqrt(v3)) / std::sqrt(v1);
+	double a3 = std::sqrt(v3 / v1);
+	if ((std::max((std::max(a1, a2)), a3)) == a2) { shape = 2; }
+	else if ((a3 >= a1) && (a3 >= a2)) { shape = 3; }
+
+
+	/* normal */
+	int minNumber = 0;
+	if ((abs(v2) <= abs(v1)) && (abs(v2) <= abs(v3)))
+	{
+		minNumber = 1;
+	}
+	if ((abs(v3) <= abs(v1)) && (abs(v3) <= abs(v2)))
+	{
+		minNumber = 2;
+	}
+	double A = eVector(0, minNumber);
+	double B = eVector(1, minNumber);
+	double C = eVector(2, minNumber);
+	double D = -(A*meanX + B * meanY + C * meanZ);
+	if (C < 0)
+	{
+		A *= -1;
+		B *= -1;
+		C *= -1;
+		D *= -1;
+	}
+
+	/* angle with Z-axis */
+	double angle = (180.0 / 3.1415926)*acos(C / (sqrt(A*A + B * B + C * C)));
+	includedAngle = abs(angle - 90);
+
+	return shape;
 }
 
 /* cluster */
@@ -612,7 +709,7 @@ QList<QList<int>> xjAlgorithm::xjCluster(const QMultiHash<int, int> &mhGridNumbe
 		QList<int> list;
 		RegionGrowth(list, cgn, parameter.sumCol, mhGridNumber, mhKey);
 
-		if (list.size() > 1)
+		if (list.size() >= parameter.clusterCount)
 			listCollection.append(list);
 	}
 
@@ -634,7 +731,12 @@ void xjAlgorithm::RegionGrowth(QList<int> &list, const int &cGridNumber, const i
 		for (int c = col - 1; c < col + 2; c++)
 		{
 			int gn = (r - 1)*sumCol + c;
-			if ((mhGridNumber.contains(gn)) && (!mhKey.contains(gn)))
+			int neighborCount = xjGetBeighborCount(r, c, sumCol, mhGridNumber);
+			if (
+				(mhGridNumber.contains(gn)) 
+				&& (!mhKey.contains(gn))
+				&& (neighborCount>3)
+				)
 			{
 				list.append(gn);
 				mhKey.insert(gn, gn);
@@ -643,6 +745,22 @@ void xjAlgorithm::RegionGrowth(QList<int> &list, const int &cGridNumber, const i
 			}
 		}
 	}
+}
+//邻域格网数量
+int xjAlgorithm::xjGetBeighborCount(const int &row, const int &col, const int &sumCol, const QMultiHash<int, int> &mhGridNumber)
+{
+	int neighborCount = 0;
+	for (int r = row - 1; r < row + 2; r++)
+	{
+		for (int c = col - 1; c < col + 2; c++)
+		{
+			int gn = (r - 1)*sumCol + c;
+			if (mhGridNumber.contains(gn))
+				neighborCount++;
+		}
+	}
+
+	return neighborCount;
 }
 
 
@@ -791,97 +909,7 @@ float xjAlgorithm::xjNeighbourhoodPoint(const QMultiHash<int, xjPoint> &mhGriddi
 	return minZ;
 }
 
-/* 特征值和特征向量 eigenvalue and eigenvector */
-int xjAlgorithm::xjEigenValueVectorShape(const QList<xjPoint> &listP,double &includedAngle)
-{
-	int shape = 1;
 
-	double sumX = 0, sumY = 0, sumZ = 0;
-	double meanX = 0, meanY = 0, meanZ = 0;
-	double matXX = 0, matYY = 0, matZZ = 0;
-	double matXY = 0, matXZ = 0, matYZ = 0;
-	int count = listP.size();
-	for (int i = 0; i < count; i++)
-	{
-		sumX += listP.at(i).x;
-		sumY += listP.at(i).y;
-		sumZ += listP.at(i).z;
-
-		matXX += listP.at(i).x * listP.at(i).x;
-		matYY += listP.at(i).y * listP.at(i).y;
-		matZZ += listP.at(i).z * listP.at(i).z;
-
-		matXY += listP.at(i).x * listP.at(i).y;
-		matXZ += listP.at(i).x * listP.at(i).z;
-		matYZ += listP.at(i).y * listP.at(i).z;
-	}
-
-	meanX = sumX / count;
-	meanY = sumY / count;
-	meanZ = sumZ / count;
-	matXX /= count;
-	matYY /= count;
-	matZZ /= count;
-	matXY /= count;
-	matXZ /= count;
-	matYZ /= count;
-
-	/* ------------------ */
-	Matrix3d eMat;
-	eMat(0, 0) = matXX - meanX * meanX; eMat(0, 1) = matXY - meanX * meanY; eMat(0, 2) = matXZ - meanX * meanZ;
-	eMat(1, 0) = matXY - meanX * meanY; eMat(1, 1) = matYY - meanY * meanY; eMat(1, 2) = matYZ - meanY * meanZ;
-	eMat(2, 0) = matXZ - meanX * meanZ; eMat(2, 1) = matYZ - meanY * meanZ; eMat(2, 2) = matZZ - meanZ * meanZ;
-
-	Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
-	Matrix3d eValue = xjMat.pseudoEigenvalueMatrix();
-	Matrix3d eVector = xjMat.pseudoEigenvectors();
-	double v1 = eValue(0, 0);
-	double v2 = eValue(1, 1);
-	double v3 = eValue(2, 2);
-
-	//eigenvalue
-	QList<float> listEV;
-	listEV << v1 << v2 << v3;
-	qSort(listEV.begin(), listEV.end());//从小到大
-	v1 = listEV.at(2);
-	v2 = listEV.at(1);
-	v3 = listEV.at(0);
-
-	//calculate
-	double a1 = (std::sqrt(v1) - std::sqrt(v2)) / std::sqrt(v1);
-	double a2 = (std::sqrt(v2) - std::sqrt(v3)) / std::sqrt(v1);
-	double a3 = std::sqrt(v3 / v1);
-	if ((a2 >= a1) && (a2 >= a3)) { shape = 2; }
-	if ((a3 >= a1) && (a3 >= a2)) { shape = 3; }
-
-	//normal
-	int minNumber = 0;
-	if ((abs(v2) <= abs(v1)) && (abs(v2) <= abs(v3)))
-	{
-		minNumber = 1;
-	}
-	if ((abs(v3) <= abs(v1)) && (abs(v3) <= abs(v2)))
-	{
-		minNumber = 2;
-	}
-	double A = eVector(0, minNumber);
-	double B = eVector(1, minNumber);
-	double C = eVector(2, minNumber);
-	double D = -(A*meanX + B * meanY + C * meanZ);
-	if (C < 0)
-	{
-		A *= -1;
-		B *= -1;
-		C *= -1;
-		D *= -1;
-	}
-
-	//angle
-	double angle = (180.0 / 3.1415926)*acos(C / (sqrt(A*A + B * B + C * C)));
-	includedAngle = abs(angle - 90);
-
-	return shape;
-}
 
 
 

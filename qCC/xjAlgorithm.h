@@ -165,6 +165,7 @@ struct xjLasParameter
 	int desnoseCount;
 	float thrSlope;
 	float thrDeltaZ;
+	int clusterCount;
 };
 
 class xjAlgorithm
@@ -194,6 +195,8 @@ public:
 	QList<QList<int>> xjCluster(const QMultiHash<int, int>& mhGridNumber, xjLasParameter & parameter);
 	//interation
 	void RegionGrowth(QList<int>& list, const int & cGridNumber, const int & sumCol, const QMultiHash<int, int>& mhGridNumber, QMultiHash<int, int>& mhKey);
+	//ÁÚÓò¸ñÍøÊıÁ¿
+	int xjGetBeighborCount(const int & row, const int & col, const int & sumCol, const QMultiHash<int, int>& mhGridNumber);
 
 	QMultiHash<int, xjGrid> xjGridProperty(const QMultiHash<int, xjPoint>& mhGrid, xjLasParameter & parameter);
 
