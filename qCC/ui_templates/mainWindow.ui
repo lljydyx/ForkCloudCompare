@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1423</width>
+    <width>830</width>
     <height>806</height>
    </rect>
   </property>
@@ -38,7 +38,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1423</width>
+     <width>830</width>
      <height>23</height>
     </rect>
    </property>
@@ -613,7 +613,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="minimumSize">
     <size>
      <width>103</width>
-     <height>137</height>
+     <height>197</height>
     </size>
    </property>
    <property name="maximumSize">
@@ -796,6 +796,18 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionDoTest"/>
    <addaction name="actionRSE"/>
    <addaction name="actionPCtoPolyline"/>
+  </widget>
+  <widget class="QDockWidget" name="dockWidget_2">
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_5">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTextEdit" name="textEditTest"/>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <action name="actionOpen">
    <property name="icon">

@@ -990,7 +990,7 @@ bool xjAlgorithm::xjCreatePolyline(ccPointCloud* cloud, const QString &shpPath)
 	GDALDataset *xjDataset = xjDriver->Create(shpPath.toStdString().c_str(), 0, 0, 0, GDT_Unknown, NULL);
 	if (xjDataset == NULL) { return false; }
 
-	OGRLayer *xjLayer = xjDataset->CreateLayer("point_out", NULL, wkbLineStringZM, NULL);
+	OGRLayer *xjLayer = xjDataset->CreateLayer("point_Line", NULL, wkbLineStringZM, NULL);
 	if (xjLayer == NULL) { return false; }
 
 	//创建属性字段
@@ -1000,9 +1000,9 @@ bool xjAlgorithm::xjCreatePolyline(ccPointCloud* cloud, const QString &shpPath)
 	OGRFieldDefn fieldNAME("NAME", OFTString);
 	fieldNAME.SetWidth(32);
 	xjLayer->CreateField(&fieldNAME);
-	OGRFieldDefn fieldLENGTH("LENGTH", OFTReal);
-	fieldLENGTH.SetPrecision(16);
-	xjLayer->CreateField(&fieldLENGTH);
+	OGRFieldDefn minX("LENGTH", OFTReal);
+	minX.SetPrecision(16);
+	xjLayer->CreateField(&minX);
 
 	//创建要素
 	OGRFeature *xjFeature = OGRFeature::CreateFeature(xjLayer->GetLayerDefn());
@@ -1022,6 +1022,84 @@ bool xjAlgorithm::xjCreatePolyline(ccPointCloud* cloud, const QString &shpPath)
 	//判断
 	if (xjLayer->CreateFeature(xjFeature) != OGRERR_NONE) { return false; }
 	OGRFeature::DestroyFeature(xjFeature);
+
+	GDALClose(xjDataset);
+
+	return true;
+}
+
+/* create polygon */
+bool xjAlgorithm::xjCreatePolygon(ccPointCloud* cloud, const QString &shpPath)
+{
+	GDALAllRegister();
+	OGRRegisterAll();
+	const char *xjDriverName = "ESRI Shapefile";
+	GDALDriver *xjDriver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(xjDriverName);
+	if (xjDriver == NULL) { return false; }
+
+	GDALDataset *xjDataset = xjDriver->Create(shpPath.toStdString().c_str(), 0, 0, 0, GDT_Unknown, NULL);
+	if (xjDataset == NULL) { return false; }
+
+	OGRLayer *xjLayer = xjDataset->CreateLayer("polygon1", NULL, wkbPolygonZM, NULL);
+	if (xjLayer == NULL) { return false; }
+
+	//创建属性字段
+	OGRFieldDefn fieldID("ID", OFTInteger);
+	fieldID.SetWidth(32);
+	xjLayer->CreateField(&fieldID);
+
+	OGRFieldDefn fieldNAME("NAME", OFTString);
+	fieldNAME.SetWidth(32);
+	xjLayer->CreateField(&fieldNAME);
+
+	OGRFieldDefn minX("minX", OFTReal);
+	minX.SetPrecision(16);
+	xjLayer->CreateField(&minX);
+
+	OGRFieldDefn minY("minY", OFTReal);
+	minY.SetPrecision(16);
+	xjLayer->CreateField(&minY);
+
+	OGRFieldDefn maxX("maxX", OFTReal);
+	maxX.SetPrecision(16);
+	xjLayer->CreateField(&maxX);
+
+	OGRFieldDefn maxY("maxY", OFTReal);
+	maxY.SetPrecision(16);
+	xjLayer->CreateField(&maxY);
+
+	for (int i = 0; i < cloud->size(); i += 4)
+	{
+		//创建要素
+		OGRFeature *xjFeature = OGRFeature::CreateFeature(xjLayer->GetLayerDefn());
+		//矢量面要素的边界是闭合环
+		OGRLinearRing xjRing;
+
+		xjRing.addPoint(cloud->getPoint(i)->x, cloud->getPoint(i)->y, cloud->getPoint(i)->z);
+		xjRing.addPoint(cloud->getPoint(i+1)->x, cloud->getPoint(i+1)->y, cloud->getPoint(i+1)->z);
+		xjRing.addPoint(cloud->getPoint(i+2)->x, cloud->getPoint(i+2)->y, cloud->getPoint(i+2)->z);
+		xjRing.addPoint(cloud->getPoint(i+3)->x, cloud->getPoint(i+3)->y, cloud->getPoint(i+3)->z);
+
+		xjRing.closeRings();//首尾点重合形成闭合环
+
+		 //图层添加要素
+		OGRPolygon xjPolygon;
+		xjPolygon.addRing(&xjRing);
+		xjFeature->SetGeometry(&xjPolygon);
+
+		//设置属性
+		xjFeature->SetFID(i);
+		xjFeature->SetField(0, i);
+		xjFeature->SetField(1, "xj");
+		xjFeature->SetField("minX", -cloud->getGlobalShift().x + cloud->getPoint(i)->x);
+		xjFeature->SetField("minY", -cloud->getGlobalShift().y + cloud->getPoint(i)->y);
+		xjFeature->SetField("maxX", -cloud->getGlobalShift().x + cloud->getPoint(i+2)->x);
+		xjFeature->SetField("maxY", -cloud->getGlobalShift().y + cloud->getPoint(i+2)->y);
+
+		//判断
+		if (xjLayer->CreateFeature(xjFeature) != OGRERR_NONE) { return false; }
+		OGRFeature::DestroyFeature(xjFeature);
+	}
 
 	GDALClose(xjDataset);
 

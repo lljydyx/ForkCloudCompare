@@ -11194,6 +11194,117 @@ void MainWindow::on_actionDoTest_triggered()
 	pDlg.setMethodTitle("...");
 	pDlg.start();
 
+#pragma region //LL
+	//int B1 = 36, B2 = 36, B3 = 50;
+	//int L1 = 117, L2 = 0, L3 = 0;
+	//int pCount = 0;
+	//int nB1 = 36, nB2 = 36, nB3 = 50;
+	//int nL1 = 117, nL2 = 0, nL3 = 0;
+	//QString pStr = "";
+	//for (int r = 0; r <8; r++)
+	//{
+	//	for (int c = 0; c < 7; c++)
+	//	{
+	//		/* 左下 */
+	//		/* B */
+	//		nB3 = B3 + r * 5;
+	//		if (nB3>=60)
+	//		{
+	//			nB3 -= 60;
+	//			nB2 += 1;
+	//		}
+	//		if (nB2 >= 60)
+	//		{
+	//			nB2 -=60;
+	//			nB1 += 1;
+	//		}
+	//		/* L */
+	//		nL3 = L3 + c * 5;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " +
+	//			QString::number(nB1) + ":" + QString::number(nB2) + ":" + QString::number(nB3) + " " +
+	//			QString::number(nL1) + ":" + QString::number(nL2) + ":" + QString::number(nL3);
+	//		m_UI->textEditTest->append(pStr);
+
+	//		/* 右下 */
+	//		nL3 = L3 + (c + 1) * 5;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " +
+	//			QString::number(nB1) + ":" + QString::number(nB2) + ":" + QString::number(nB3) + " " +
+	//			QString::number(nL1) + ":" + QString::number(nL2) + ":" + QString::number(nL3);
+	//		m_UI->textEditTest->append(pStr);
+
+	//		/* 右上 */
+	//		nB3 = B3 + (r+1) * 5;
+	//		if (nB3 >= 60)
+	//		{
+	//			nB3 -= 60;
+	//			nB2 += 1;
+	//		}
+	//		if (nB2 >= 60)
+	//		{
+	//			nB2 -= 60;
+	//			nB1 += 1;
+	//		}
+	//		nL3 = L3 + (c + 1) * 5;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " +
+	//			QString::number(nB1) + ":" + QString::number(nB2) + ":" + QString::number(nB3) + " " +
+	//			QString::number(nL1) + ":" + QString::number(nL2) + ":" + QString::number(nL3);
+	//		m_UI->textEditTest->append(pStr);
+
+	//		/* 左上 */
+	//		nL3 = L3 + c * 5;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " +
+	//			QString::number(nB1) + ":" + QString::number(nB2) + ":" + QString::number(nB3) + " " +
+	//			QString::number(nL1) + ":" + QString::number(nL2) + ":" + QString::number(nL3);
+	//		m_UI->textEditTest->append(pStr);
+	//	}
+	//}
+#pragma endregion
+
+#pragma region //LL
+	double x0 = 500000, y0 = 4053662.670;
+	double deltaX = 124.2485, deltaY = 154.2857;
+	int pCount = 0;
+	double x = 500000.0, y = 4053662.670;
+	QString pStr = "";
+	for (int r = 0; r < 8; r++)
+	{
+		for (int c = 0; c < 7; c++)
+		{
+			x = x0 + c * deltaX;
+			y = y0 + r * deltaY;
+			pCount++;
+			pStr = QString::number(pCount) + " " + QString::number(x,'f',4) 
+				+ " " + QString::number(y,'f',4) + " 0";
+			m_UI->textEditTest->append(pStr);
+
+			x = x0 + c * deltaX + deltaX;
+			y = y0 + r * deltaY;
+			pCount++;
+			pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
+				+ " " + QString::number(y, 'f', 4) + " 0";
+			m_UI->textEditTest->append(pStr);
+
+			x = x0 + c * deltaX + deltaX;
+			y = y0 + r * deltaY+ deltaY;
+			pCount++;
+			pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
+				+ " " + QString::number(y, 'f', 4) + " 0";
+			m_UI->textEditTest->append(pStr);
+
+			x = x0 + c * deltaX;
+			y = y0 + r * deltaY + deltaY;
+			pCount++;
+			pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
+				+ " " + QString::number(y, 'f', 4) + " 0";
+			m_UI->textEditTest->append(pStr);
+		}
+	}
+#pragma endregion
+
 	xjAlgorithm *xjal = new xjAlgorithm();
 	QStringList xjList;
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
@@ -11209,13 +11320,13 @@ void MainWindow::on_actionDoTest_triggered()
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
 
-				//QString shpPath = QCoreApplication::applicationDirPath()+ "/test/" + cloudName + ".shp";
-				//bool b = xjal->xjCreatePolyline(cloud, shpPath);
+				QString shpPath = QCoreApplication::applicationDirPath()+ "/test/" + cloudName + ".shp";
+				bool b = xjal->xjCreatePolygon(cloud, shpPath);
 
-				//if (b)
-				//	xjList.append(shpPath);
+				if (b)
+					xjList.append(shpPath);
 
-				//ccLog::Print(shpPath +" [create shape] OK");
+				ccLog::Print(shpPath +" [create shape] OK");
 			}
 		}
 	}

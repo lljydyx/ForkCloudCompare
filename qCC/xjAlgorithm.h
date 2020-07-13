@@ -220,6 +220,8 @@ public:
 
 	/* create polyline */
 	bool xjCreatePolyline(ccPointCloud * cloud, const QString & shpPath);
+	/* create polygon */
+	bool xjCreatePolygon(ccPointCloud * cloud, const QString & shpPath);
 };
 
 #endif // !XJ_ALGORITHM
