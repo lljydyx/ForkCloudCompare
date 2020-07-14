@@ -5304,6 +5304,7 @@ void MainWindow::doActionMatchScales()
 	updateUI();
 }
 
+/* SOR: Statistical Outlier Removal */
 void MainWindow::doActionSORFilter()
 {
 	ccSORFilterDlg sorDlg(this);
