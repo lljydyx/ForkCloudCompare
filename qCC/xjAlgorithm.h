@@ -215,6 +215,9 @@ public:
 	/* neighbourhood point */
 	float xjNeighbourhoodPoint(const QMultiHash<int, xjPoint>& mhGridding, xjLasParameter &parameter, const int & gn, const int & layer);
 
+	/* get row and col by grid number */
+	void xjGetRowColByGN(const int & gridNumber, const int & sumCol, int & row, int & col);
+
 	/* 特征值和特征向量 eigenvalue and eigenvector */
 	int xjEigenValueVectorShape(const QList<xjPoint>& listP, double &includedAngle);
 

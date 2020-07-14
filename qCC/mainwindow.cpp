@@ -7938,6 +7938,7 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 			CCVector3 C;
 			CCVector3 N;
 			const PointCoordinateType *m_PlaneEquation = new PointCoordinateType[4];
+			CCVector3d GC;
 
 			ccHObject* plane = nullptr;
 			if (fitFacet)
@@ -7972,6 +7973,7 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 					C = *CCLib::Neighbourhood(cloud).getGravityCenter();
 					pPlane->enableStippling(true);
 					m_PlaneEquation = pPlane->getEquation();
+					GC = shifted->toGlobal3d(C);
 				}
 			}
 
@@ -7986,9 +7988,11 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 				//We always consider the normal with a positive 'Z' by default!
 				if (N.z < 0.0)
 					N *= -1.0;
-				ccConsole::Print("\t- normal: (%f,%f,%f)", N.x, N.y, N.z);
-				ccConsole::Print("\t- center: (%f,%f,%f)", C.x, C.y, C.z);
-				ccConsole::Print("\t- A-B-C-D: (%f, %f, %f, %f)", m_PlaneEquation[0], m_PlaneEquation[1], m_PlaneEquation[2], -m_PlaneEquation[3]);
+				
+				ccConsole::Print("\t- Local_center: (%4f, %4f, %4f)", C.x, C.y, C.z);
+				ccConsole::Print("\t- Local__ABCD: (%f, %f, %f, %f)", N.x, N.y, N.z, -m_PlaneEquation[3]);
+				ccConsole::Print("\t- Global_center: (%4f, %4f, %4f)", GC.x, GC.y, GC.z);
+				ccConsole::Print("\t- Global__ABCD: (%f, %f, %f, %f)", N.x, N.y, N.z, -N.x * GC.x - N.y * GC.y - N.z * GC.z);
 
 				//we compute strike & dip by the way
 				PointCoordinateType dip = 0.0f;

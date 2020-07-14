@@ -910,6 +910,31 @@ float xjAlgorithm::xjNeighbourhoodPoint(const QMultiHash<int, xjPoint> &mhGriddi
 }
 
 
+/* get row and col by grid number */
+void xjAlgorithm::xjGetRowColByGN(const int &gridNumber, const int &sumCol, int &row, int &col)
+{
+	if (gridNumber <= sumCol)
+	{
+		row = 1;
+		col = gridNumber;
+	}
+	else
+	{
+		int Quotient = (int)(gridNumber / sumCol);
+		int Remainder = gridNumber % sumCol;//余数
+		if (Remainder == 0)
+		{
+			row = Quotient;
+			col = sumCol;
+		}
+		else
+		{
+			row = Quotient + 1;
+			col = Remainder;
+		}
+	}
+}
+
 
 
 
@@ -1048,7 +1073,7 @@ bool xjAlgorithm::xjCreatePolygon(ccPointCloud* cloud, const QString &shpPath)
 	fieldID.SetWidth(32);
 	xjLayer->CreateField(&fieldID);
 
-	OGRFieldDefn fieldNAME("NAME", OFTString);
+	OGRFieldDefn fieldNAME("GLN", OFTString);
 	fieldNAME.SetWidth(32);
 	xjLayer->CreateField(&fieldNAME);
 
@@ -1068,8 +1093,12 @@ bool xjAlgorithm::xjCreatePolygon(ccPointCloud* cloud, const QString &shpPath)
 	maxY.SetPrecision(16);
 	xjLayer->CreateField(&maxY);
 
+	int count = 0;
+	QString gridNumber = "";
 	for (int i = 0; i < cloud->size(); i += 4)
 	{
+		count++;
+
 		//创建要素
 		OGRFeature *xjFeature = OGRFeature::CreateFeature(xjLayer->GetLayerDefn());
 		//矢量面要素的边界是闭合环
@@ -1090,7 +1119,11 @@ bool xjAlgorithm::xjCreatePolygon(ccPointCloud* cloud, const QString &shpPath)
 		//设置属性
 		xjFeature->SetFID(i);
 		xjFeature->SetField(0, i);
-		xjFeature->SetField(1, "xj");
+		int row = 0,col = 0;
+		xjGetRowColByGN(count, 7, row, col);
+		row += 442;
+		gridNumber = "3103611700" + QString::number(row) + "0000" + QString::number(col);
+		xjFeature->SetField(1, gridNumber.toStdString().c_str());
 		xjFeature->SetField("minX", -cloud->getGlobalShift().x + cloud->getPoint(i)->x);
 		xjFeature->SetField("minY", -cloud->getGlobalShift().y + cloud->getPoint(i)->y);
 		xjFeature->SetField("maxX", -cloud->getGlobalShift().x + cloud->getPoint(i+2)->x);
