@@ -144,7 +144,10 @@
         <file>images/monitor.svg</file>
         <file>images/photo-camera.svg</file>
         <file>images/search.svg</file>
-        <file>images/xjRSE.png</file>
+        <file>images/xjRoadSurface.png</file>
+		<file>images/xjTrafficMarking.png</file>
+		<file>images/xjPointLine.png</file>
+		<file>images/xjPointPolygon.png</file>
     </qresource>
     <qresource prefix="/CC/Icons">
         <file>images/icon/cc_viewer_icon_16.png</file>

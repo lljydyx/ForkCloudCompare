@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>830</width>
+    <width>1426</width>
     <height>806</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icones.qrc">
-    <normaloff>:/CC/Icons/images/icon/cc_icon_16.png</normaloff>:/CC/Icons/images/icon/cc_icon_16.png</iconset>
+    <normaloff>:/CC/Icons/images/icon/xj.jpg</normaloff>:/CC/Icons/images/icon/xj.jpg</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>true</bool>
@@ -38,7 +38,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>830</width>
+     <width>1426</width>
      <height>23</height>
     </rect>
    </property>
@@ -801,13 +801,14 @@ QTreeView::branch:open:has-children:has-siblings  {
    </attribute>
    <addaction name="actionDoTest"/>
    <addaction name="actionRSE"/>
+   <addaction name="actionExtractTrafficMarking"/>
    <addaction name="actionPCtoPolyline"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetTest">
    <property name="minimumSize">
     <size>
      <width>89</width>
-     <height>30</height>
+     <height>70</height>
     </size>
    </property>
    <property name="allowedAreas">
@@ -3115,8 +3116,12 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
   </action>
   <action name="actionExtractTrafficMarking">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/xjTrafficMarking.png</normaloff>:/CC/images/xjTrafficMarking.png</iconset>
+   </property>
    <property name="text">
-    <string>提取交通标线</string>
+    <string>提取标线</string>
    </property>
    <property name="toolTip">
     <string>矢量化交通标线</string>
@@ -3137,7 +3142,7 @@ QTreeView::branch:open:has-children:has-siblings  {
   <action name="actionRSE">
    <property name="icon">
     <iconset resource="../icones.qrc">
-     <normaloff>:/CC/images/xjRSE.png</normaloff>:/CC/images/xjRSE.png</iconset>
+     <normaloff>:/CC/images/xjRoadSurface.png</normaloff>:/CC/images/xjRoadSurface.png</iconset>
    </property>
    <property name="text">
     <string>road surface extract</string>
@@ -3147,6 +3152,10 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
   </action>
   <action name="actionPCtoPolyline">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/xjPointLine.png</normaloff>:/CC/images/xjPointLine.png</iconset>
+   </property>
    <property name="text">
     <string>点-&gt;线</string>
    </property>

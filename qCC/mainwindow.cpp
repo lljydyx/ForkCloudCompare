@@ -5357,7 +5357,7 @@ void MainWindow::doActionSORFilter()
 				ccPointCloud* cleanCloud = cloud->partialClone(selection);
 				if (cleanCloud)
 				{
-					cleanCloud->setName(cloud->getName() + QString(".clean"));
+					cleanCloud->setName(cloud->getName() + QString(".SOR"));
 					cleanCloud->setDisplay(cloud->getDisplay());
 					if (cloud->getParent())
 						cloud->getParent()->addChild(cleanCloud);
@@ -7951,6 +7951,8 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 					N = facet->getNormal();
 					C = facet->getCenter();
 					rms = facet->getRMS();
+					m_PlaneEquation = facet->getPlaneEquation();
+					GC = shifted->toGlobal3d(C);
 
 					//manually copy shift & scale info!
 					if (shifted)
@@ -7960,6 +7962,8 @@ void MainWindow::doComputePlaneOrientation(bool fitFacet)
 						{
 							contour->setGlobalScale(shifted->getGlobalScale());
 							contour->setGlobalShift(shifted->getGlobalShift());
+							//ccPointCloud* pcContourVertices = facet->getContourVertices();
+							//ccConsole::Print("\t- pcContourVertices: (%f)", pcContourVertices->size());
 						}
 					}
 				}
@@ -11023,56 +11027,6 @@ void MainWindow::doActionComparePlanes()
 }
 
 /* ------------------------------- */
-/* 提取交通标线 extract traffic marking: 20200629未完成 */
-void MainWindow::on_actionExtractTrafficMarking_triggered()
-{
-	xjAlgorithm *xjal = new xjAlgorithm();
-	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
-	for (ccHObject *entity : selectedEntities)
-	{
-		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
-		{
-			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
-			if (cloud)
-			{
-				/* threshold */
-				uint threshold = xjal->xjGetIntensityByOTSU(cloud, "Intensity", false);
-
-				/* points of traffic marking */
-				std::vector<CCVector3> vMarkingPoints = xjal->xjGetTrafficMarkingPoints(cloud, "Intensity", threshold, false);
-				xjal->ViewPartResult(cloud, vMarkingPoints, "MarkingPoints", 4, 1.0f, 0, 0);
-
-				/* convex hull */
-				std::vector<CCVector3> vCHpoint = xjal->xjGetConvexHullByGrahamScan(vMarkingPoints);
-				double areaCH = xjal->ComputePolygonArea(vCHpoint);
-				//xjal->ViewPartResult(cloud, vCHpoint, "CH", 6, 0, 1.0f, 0);
-
-				/* MBR */
-				double length = 0, width = 0;
-				std::vector<CCVector3> vMBRpoint = xjal->xjMinimumBoundingRectangle(length, width, vCHpoint);
-				//xjal->ViewPartResult(cloud, vMBRpoint, "MBR",8, 1.0f, 1.0f, 1.0f);
-				//xjal->ViewPartResultShp(vMBRpoint, cloud->getName());
-				
-				ccLog::Print(cloud->getName()
-					+"  threshold=" + QString::number(threshold)
-					+"  CHarea=" + QString::number(areaCH)
-					+"  MBRarea=" + QString::number(length*width)
-					+"  proportion=" + QString::number(areaCH /length/width)
-					+"  length=" + QString::number(length) + "," + "width=" + QString::number(width)
-				);
-
-
-
-			}
-		}
-	}
-	refreshAll();
-	updateUI();
-
-	delete xjal;
-	xjal = nullptr;
-}
-
 /* 路面点云检测 road surface extract */
 void MainWindow::on_actionRSE_triggered()
 {
@@ -11147,6 +11101,56 @@ void MainWindow::on_actionRSE_triggered()
 	xjal = nullptr;
 
 	ccLog::Print("[RSE] OK");
+}
+
+/* 提取交通标线 extract traffic marking */
+void MainWindow::on_actionExtractTrafficMarking_triggered()
+{
+	xjAlgorithm *xjal = new xjAlgorithm();
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* threshold */
+				uint threshold = xjal->xjGetIntensityByOTSU(cloud, "Intensity", false);
+
+				/* points of traffic marking */
+				std::vector<CCVector3> vMarkingPoints = xjal->xjGetTrafficMarkingPoints(cloud, "Intensity", threshold, false);
+				xjal->ViewPartResult(cloud, vMarkingPoints, "MarkingPoints", 4, 1.0f, 0, 0);
+
+				/* convex hull */
+				std::vector<CCVector3> vCHpoint = xjal->xjGetConvexHullByGrahamScan(vMarkingPoints);
+				double areaCH = xjal->ComputePolygonArea(vCHpoint);
+				//xjal->ViewPartResult(cloud, vCHpoint, "CH", 6, 0, 1.0f, 0);
+
+				/* MBR */
+				double length = 0, width = 0;
+				std::vector<CCVector3> vMBRpoint = xjal->xjMinimumBoundingRectangle(length, width, vCHpoint);
+				//xjal->ViewPartResult(cloud, vMBRpoint, "MBR",8, 1.0f, 1.0f, 1.0f);
+				//xjal->ViewPartResultShp(vMBRpoint, cloud->getName());
+
+				ccLog::Print(cloud->getName()
+					+ "  threshold=" + QString::number(threshold)
+					+ "  CHarea=" + QString::number(areaCH)
+					+ "  MBRarea=" + QString::number(length*width)
+					+ "  proportion=" + QString::number(areaCH / length / width)
+					+ "  length=" + QString::number(length) + "," + "width=" + QString::number(width)
+				);
+
+
+
+			}
+		}
+	}
+	refreshAll();
+	updateUI();
+
+	delete xjal;
+	xjal = nullptr;
 }
 
 /* 点云生闭合矢量线 Point clouds are connected in order to generate closed vector lines. */
