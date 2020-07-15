@@ -11100,7 +11100,7 @@ void MainWindow::on_actionRSE_triggered()
 	delete xjal;
 	xjal = nullptr;
 
-	ccLog::Print("[RSE] OK");
+	ccLog::Print("[Road Surface Extract] OK");
 }
 
 /* 提取交通标线 extract traffic marking */
@@ -11274,49 +11274,50 @@ void MainWindow::on_actionDoTest_triggered()
 #pragma endregion
 
 #pragma region //LL
-	double x0 = 500000, y0 = 4053662.670;
-	double deltaX = 124.2485, deltaY = 154.2857;
-	int pCount = 0;
-	double x = 500000.0, y = 4053662.670;
-	QString pStr = "";
-	for (int r = 0; r < 8; r++)
-	{
-		for (int c = 0; c < 7; c++)
-		{
-			x = x0 + c * deltaX;
-			y = y0 + r * deltaY;
-			pCount++;
-			pStr = QString::number(pCount) + " " + QString::number(x,'f',4) 
-				+ " " + QString::number(y,'f',4) + " 0";
-			m_UI->textEditTest->append(pStr);
+	//double x0 = 500000, y0 = 4053662.670;
+	//double deltaX = 124.2485, deltaY = 154.2857;
+	//int pCount = 0;
+	//double x = 500000.0, y = 4053662.670;
+	//QString pStr = "";
+	//for (int r = 0; r < 8; r++)
+	//{
+	//	for (int c = 0; c < 7; c++)
+	//	{
+	//		x = x0 + c * deltaX;
+	//		y = y0 + r * deltaY;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " + QString::number(x,'f',4) 
+	//			+ " " + QString::number(y,'f',4) + " 0";
+	//		m_UI->textEditTest->append(pStr);
 
-			x = x0 + c * deltaX + deltaX;
-			y = y0 + r * deltaY;
-			pCount++;
-			pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
-				+ " " + QString::number(y, 'f', 4) + " 0";
-			m_UI->textEditTest->append(pStr);
+	//		x = x0 + c * deltaX + deltaX;
+	//		y = y0 + r * deltaY;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
+	//			+ " " + QString::number(y, 'f', 4) + " 0";
+	//		m_UI->textEditTest->append(pStr);
 
-			x = x0 + c * deltaX + deltaX;
-			y = y0 + r * deltaY+ deltaY;
-			pCount++;
-			pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
-				+ " " + QString::number(y, 'f', 4) + " 0";
-			m_UI->textEditTest->append(pStr);
+	//		x = x0 + c * deltaX + deltaX;
+	//		y = y0 + r * deltaY+ deltaY;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
+	//			+ " " + QString::number(y, 'f', 4) + " 0";
+	//		m_UI->textEditTest->append(pStr);
 
-			x = x0 + c * deltaX;
-			y = y0 + r * deltaY + deltaY;
-			pCount++;
-			pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
-				+ " " + QString::number(y, 'f', 4) + " 0";
-			m_UI->textEditTest->append(pStr);
-		}
-	}
+	//		x = x0 + c * deltaX;
+	//		y = y0 + r * deltaY + deltaY;
+	//		pCount++;
+	//		pStr = QString::number(pCount) + " " + QString::number(x, 'f', 4)
+	//			+ " " + QString::number(y, 'f', 4) + " 0";
+	//		m_UI->textEditTest->append(pStr);
+	//	}
+	//}
 #pragma endregion
 
 	xjAlgorithm *xjal = new xjAlgorithm();
 	QStringList xjList;
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	ccHObject* resultContainer = new ccHObject("Tree");
 	for (ccHObject *entity : selectedEntities)
 	{
 		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
@@ -11329,13 +11330,27 @@ void MainWindow::on_actionDoTest_triggered()
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
 
-				QString shpPath = QCoreApplication::applicationDirPath()+ "/test/" + cloudName + ".shp";
-				bool b = xjal->xjCreatePolygon(cloud, shpPath);
+				xjLasParameter parameter;
+				parameter.GSD = 0.3;
+				parameter.bVoxel = false;
+				parameter.desnoseCount = 10;
+				parameter.thrSlope = 45;
+				parameter.thrDeltaZ = 0.2;
+				parameter.clusterCount = 3;
 
-				if (b)
-					xjList.append(shpPath);
+				QMultiHash<int, xjPoint> mhGridding = xjal->xjGridding(cloud, parameter);
 
-				ccLog::Print(shpPath +" [create shape] OK");
+				xjal->xjDenoising(mhGridding, parameter);
+
+				ccPointCloud *resultPC = new ccPointCloud(cloud->getName() + "_Tree_");
+
+				resultPC->setGlobalShift(cloud->getGlobalShift());
+				resultPC->setGlobalScale(cloud->getGlobalScale());
+				ccColor::Rgb col = ccColor::Generator::Random();
+				resultPC->setColor(0, 255, 0);
+				resultPC->showColors(true);
+				resultPC->setPointSize(4);
+				resultContainer->addChild(resultPC);
 			}
 		}
 	}
@@ -11346,4 +11361,6 @@ void MainWindow::on_actionDoTest_triggered()
 
 	delete xjal;
 	xjal = nullptr;
+
+	ccLog::Print("[Tree Extract] OK");
 }
