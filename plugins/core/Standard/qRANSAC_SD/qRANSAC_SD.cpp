@@ -121,7 +121,7 @@ void doDetection()
 static unsigned s_supportPoints = 500;	// this is the minimal numer of points required for a primitive
 static double   s_maxNormalDev_deg = 25.0;	// maximal normal deviation from ideal shape (in degrees)
 static double   s_proba = 0.01;	// probability that no better candidate was overlooked during sampling
-static bool s_primEnabled[5] = { true,true,true,false,false };
+static bool s_primEnabled[5] = { true,false,false,false,false };
 
 void qRansacSD::doAction()
 {
@@ -157,7 +157,7 @@ void qRansacSD::doAction()
 	//init dialog with default values
 	ccRansacSDDlg rsdDlg(m_app->getMainWindow());
 	rsdDlg.epsilonDoubleSpinBox->setValue(.005f * scale);		// set distance threshold to 0.5% of bounding box width
-	rsdDlg.bitmapEpsilonDoubleSpinBox->setValue(.01f * scale);	// set bitmap resolution (= sampling resolution) to 1% of bounding box width
+	rsdDlg.bitmapEpsilonDoubleSpinBox->setValue(.01f * scale);	// set bitmap resolution (= sampling resolution) to 1% of bounding box width	
 	rsdDlg.supportPointsSpinBox->setValue(s_supportPoints);
 	rsdDlg.maxNormDevAngleSpinBox->setValue(s_maxNormalDev_deg);
 	rsdDlg.probaDoubleSpinBox->setValue(s_proba);
@@ -166,6 +166,16 @@ void qRansacSD::doAction()
 	rsdDlg.cylinderCheckBox->setChecked(s_primEnabled[2]);
 	rsdDlg.coneCheckBox->setChecked(s_primEnabled[3]);
 	rsdDlg.torusCheckBox->setChecked(s_primEnabled[4]);
+
+	/* xjAdd */
+	if (.01f * scale < 2.0)
+	{
+		rsdDlg.bitmapEpsilonDoubleSpinBox->setValue(2.0f);
+	}
+	if (s_supportPoints > pc->size()/2)
+	{
+		rsdDlg.supportPointsSpinBox->setValue(pc->size()/2);
+	}
 
 	if (!rsdDlg.exec())
 		return;

@@ -790,6 +790,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="layoutDirection">
     <enum>Qt::LeftToRight</enum>
    </property>
+   <property name="orientation">
+    <enum>Qt::Vertical</enum>
+   </property>
    <property name="floatable">
     <bool>true</bool>
    </property>

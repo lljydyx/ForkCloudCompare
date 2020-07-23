@@ -11162,7 +11162,7 @@ void MainWindow::on_actionPCtoPolyline_triggered()
 	pDlg.start();
 
 	xjAlgorithm *xjal = new xjAlgorithm();
-	QStringList xjList;
+	QStringList xjList; xjList.clear();
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
 	for (ccHObject *entity : selectedEntities)
 	{
@@ -11198,6 +11198,14 @@ void MainWindow::on_actionPCtoPolyline_triggered()
 /* ≤‚ ‘ */
 void MainWindow::on_actionDoTest_triggered()
 {
+	//for (double i = 3.0; i < 4.2; i+=0.1)
+	//{
+	//	int seconds = time(NULL)-1595210000;
+	//	ccLog::Print(QString::number(seconds));
+	//	//double a = round(i);
+	//	//ccLog::Print(QString::number(i) + "  " + QString::number(a));
+	//}
+
 	ccProgressDialog pDlg(false, this);
 	pDlg.setAutoClose(true);
 	pDlg.setMethodTitle("...");
@@ -11315,7 +11323,7 @@ void MainWindow::on_actionDoTest_triggered()
 #pragma endregion
 
 	xjAlgorithm *xjal = new xjAlgorithm();
-	QStringList xjList;
+	QStringList xjList; xjList.clear();
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
 	ccHObject* resultContainer = new ccHObject("Tree");
 	for (ccHObject *entity : selectedEntities)
@@ -11330,32 +11338,26 @@ void MainWindow::on_actionDoTest_triggered()
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
 
-				xjLasParameter parameter;
-				parameter.GSD = 0.3;
-				parameter.bVoxel = false;
-				parameter.desnoseCount = 10;
-				parameter.thrSlope = 45;
-				parameter.thrDeltaZ = 0.2;
-				parameter.clusterCount = 3;
+				double x = 0, y = 0, z = 0;
+				for (int i = 0; i < cloud->size(); i++)
+				{
+					x += cloud->getPoint(i)->x;
+					y += cloud->getPoint(i)->y;
+					z += cloud->getPoint(i)->z;
+				}
 
-				QMultiHash<int, xjPoint> mhGridding = xjal->xjGridding(cloud, parameter);
+				x /= cloud->size();
+				y /= cloud->size();
+				z /= cloud->size();
+				CCVector3 p(x, y, z);
+				CCVector3d pd = cloud->toGlobal3d(p);
 
-				xjal->xjDenoising(mhGridding, parameter);
-
-				ccPointCloud *resultPC = new ccPointCloud(cloud->getName() + "_Tree_");
-
-				resultPC->setGlobalShift(cloud->getGlobalShift());
-				resultPC->setGlobalScale(cloud->getGlobalScale());
-				ccColor::Rgb col = ccColor::Generator::Random();
-				resultPC->setColor(0, 255, 0);
-				resultPC->showColors(true);
-				resultPC->setPointSize(4);
-				resultContainer->addChild(resultPC);
+				ccLog::Print(QString::number(pd.x, 'f', 5) + " " + QString::number(pd.y, 'f', 5) + " " + QString::number(pd.z, 'f', 5));
 			}
 		}
 	}
 	
-	addToDB(xjList, 0, 0);
+	addToDB(xjList,0, 0);
 	refreshAll();
 	updateUI();
 
