@@ -1138,3 +1138,174 @@ bool xjAlgorithm::xjCreatePolygon(ccPointCloud* cloud, const QString &shpPath)
 
 	return true;
 }
+
+
+
+/* ---------- eigen3 ---------- */
+
+/* compute PCA(Principal Component Analysis) */
+Eigen::Matrix4d xjAlgorithm::xjComputePCA(ccPointCloud *cloud)
+{
+#pragma region average
+	float meanX = 0.0f, meanY = 0.0f, meanZ = 0.0f;
+	unsigned count = cloud->size();
+	for (unsigned i = 0; i < count; i++)
+	{
+		meanX += cloud->getPoint(i)->x;
+		meanY += cloud->getPoint(i)->y;
+		meanZ += cloud->getPoint(i)->z;
+	}
+	meanX /= count;
+	meanY /= count;
+	meanZ /= count;
+#pragma endregion
+
+#pragma region covariance mtrix
+	double mXX = 0.0;
+	double mYY = 0.0;
+	double mZZ = 0.0;
+	double mXY = 0.0;
+	double mXZ = 0.0;
+	double mYZ = 0.0;
+	for (unsigned i = 0; i < count; ++i)
+	{
+		mXX += static_cast<double>(cloud->getPoint(i)->x - meanX)*(cloud->getPoint(i)->x - meanX);
+		mYY += static_cast<double>(cloud->getPoint(i)->y - meanY)*(cloud->getPoint(i)->y - meanY);
+		mZZ += static_cast<double>(cloud->getPoint(i)->z - meanZ)*(cloud->getPoint(i)->z - meanZ);
+		mXY += static_cast<double>(cloud->getPoint(i)->x - meanX)*(cloud->getPoint(i)->y - meanY);
+		mXZ += static_cast<double>(cloud->getPoint(i)->x - meanX)*(cloud->getPoint(i)->z - meanZ);
+		mYZ += static_cast<double>(cloud->getPoint(i)->y - meanY)*(cloud->getPoint(i)->z - meanZ);
+	}
+	mXX /= count;
+	mYY /= count;
+	mZZ /= count;
+	mXY /= count;
+	mXZ /= count;
+	mYZ /= count;
+
+	/* ------------------ */
+	Matrix3d eMat;
+	//eMat(0, 0) = mXX - meanX * meanX; eMat(0, 1) = mXY - meanX * meanY; eMat(0, 2) = mXZ - meanX * meanZ;
+	//eMat(1, 0) = mXY - meanX * meanY; eMat(1, 1) = mYY - meanY * meanY; eMat(1, 2) = mYZ - meanY * meanZ;
+	//eMat(2, 0) = mXZ - meanX * meanZ; eMat(2, 1) = mYZ - meanY * meanZ; eMat(2, 2) = mZZ - meanZ * meanZ;
+	eMat(0, 0) = mXX; eMat(0, 1) = mXY; eMat(0, 2) = mXZ;
+	eMat(1, 0) = mYY; eMat(1, 1) = mYY; eMat(1, 2) = mYZ;
+	eMat(2, 0) = mXZ; eMat(2, 1) = mYZ; eMat(2, 2) = mZZ;
+
+	Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
+	Matrix3d eVector = xjMat.pseudoEigenvectors();
+	Matrix3d eValue = xjMat.pseudoEigenvalueMatrix();
+	std::vector<double> eigenValues = { eValue(0, 0),eValue(1, 1),eValue(2, 2) };
+
+	/* result */
+	Matrix3d sortEigenVectors;
+	std::vector<double> sortEigenValues;
+	xjSortEigenVectorByValues(eVector, eigenValues, sortEigenVectors, sortEigenValues);
+
+	Matrix4d matPCA;
+	matPCA(0, 0) = sortEigenVectors(0, 0); matPCA(0, 1) = sortEigenVectors(0, 1); matPCA(0, 2) = sortEigenVectors(0, 2); matPCA(0, 3) = 0;
+	matPCA(1, 0) = sortEigenVectors(1, 0); matPCA(1, 1) = sortEigenVectors(1, 1); matPCA(1, 2) = sortEigenVectors(1, 2); matPCA(1, 3) = 0;
+	matPCA(2, 0) = sortEigenVectors(2, 0); matPCA(2, 1) = sortEigenVectors(2, 1); matPCA(2, 2) = sortEigenVectors(2, 2); matPCA(2, 3) = 0;
+	matPCA(3, 0) = sortEigenValues[0]; matPCA(3, 1) = sortEigenValues[1]; matPCA(3, 2) = sortEigenValues[2]; matPCA(3, 3) = 0;
+
+	return matPCA;
+#pragma endregion
+}
+/* sort eigen vector by eigen values */
+void xjAlgorithm::xjSortEigenVectorByValues(const Matrix3d& eigenVectors, const std::vector<double>& eigenValues,
+	Matrix3d& sortEigenVectors, std::vector<double>& sortEigenValues)
+{
+	if ((eigenValues[0]>= eigenValues[1])&& (eigenValues[0] >= eigenValues[2]))
+	{
+		sortEigenValues.push_back(eigenValues[0]);
+		sortEigenVectors(0, 0) = eigenVectors(0, 0);
+		sortEigenVectors(1, 0) = eigenVectors(1, 0);
+		sortEigenVectors(2, 0) = eigenVectors(2, 0);
+		if (eigenValues[1] >= eigenValues[2])
+		{
+			sortEigenValues.push_back(eigenValues[1]);
+			sortEigenVectors(0, 1) = eigenVectors(0, 1);
+			sortEigenVectors(1, 1) = eigenVectors(1, 1);
+			sortEigenVectors(2, 1) = eigenVectors(2, 1);
+
+			sortEigenValues.push_back(eigenValues[2]);
+			sortEigenVectors(0, 2) = eigenVectors(0, 2);
+			sortEigenVectors(1, 2) = eigenVectors(1, 2);
+			sortEigenVectors(2, 2) = eigenVectors(2, 2);
+		}
+		else
+		{
+			sortEigenValues.push_back(eigenValues[2]);
+			sortEigenVectors(0, 1) = eigenVectors(0, 2);
+			sortEigenVectors(1, 1) = eigenVectors(1, 2);
+			sortEigenVectors(2, 1) = eigenVectors(2, 2);
+
+			sortEigenValues.push_back(eigenValues[1]);
+			sortEigenVectors(0, 2) = eigenVectors(0, 1);
+			sortEigenVectors(1, 2) = eigenVectors(1, 1);
+			sortEigenVectors(2, 2) = eigenVectors(2, 1);
+		}
+	}
+	else if ((eigenValues[1] >= eigenValues[0]) && (eigenValues[1] >= eigenValues[2]))
+	{
+		sortEigenValues.push_back(eigenValues[1]);
+		sortEigenVectors(0, 0) = eigenVectors(0, 1);
+		sortEigenVectors(1, 0) = eigenVectors(1, 1);
+		sortEigenVectors(2, 0) = eigenVectors(2, 1);
+		if (eigenValues[0] >= eigenValues[2])
+		{
+			sortEigenValues.push_back(eigenValues[0]);
+			sortEigenVectors(0, 1) = eigenVectors(0, 0);
+			sortEigenVectors(1, 1) = eigenVectors(1, 0);
+			sortEigenVectors(2, 1) = eigenVectors(2, 0);
+
+			sortEigenValues.push_back(eigenValues[2]);
+			sortEigenVectors(0, 2) = eigenVectors(0, 2);
+			sortEigenVectors(1, 2) = eigenVectors(1, 2);
+			sortEigenVectors(2, 2) = eigenVectors(2, 2);
+		}
+		else
+		{
+			sortEigenValues.push_back(eigenValues[2]);
+			sortEigenVectors(0, 1) = eigenVectors(0, 2);
+			sortEigenVectors(1, 1) = eigenVectors(1, 2);
+			sortEigenVectors(2, 1) = eigenVectors(2, 2);
+
+			sortEigenValues.push_back(eigenValues[0]);
+			sortEigenVectors(0, 2) = eigenVectors(0, 0);
+			sortEigenVectors(1, 2) = eigenVectors(1, 0);
+			sortEigenVectors(2, 2) = eigenVectors(2, 0);
+		}
+	}
+	else if ((eigenValues[2] >= eigenValues[0]) && (eigenValues[2] >= eigenValues[1]))
+	{
+		sortEigenValues.push_back(eigenValues[2]);
+		sortEigenVectors(0, 0) = eigenVectors(0, 2);
+		sortEigenVectors(1, 0) = eigenVectors(1, 2);
+		sortEigenVectors(2, 0) = eigenVectors(2, 2);
+		if (eigenValues[0] >= eigenValues[1])
+		{
+			sortEigenValues.push_back(eigenValues[0]);
+			sortEigenVectors(0, 1) = eigenVectors(0, 0);
+			sortEigenVectors(1, 1) = eigenVectors(1, 0);
+			sortEigenVectors(2, 1) = eigenVectors(2, 0);
+
+			sortEigenValues.push_back(eigenValues[1]);
+			sortEigenVectors(0, 2) = eigenVectors(0, 1);
+			sortEigenVectors(1, 2) = eigenVectors(1, 1);
+			sortEigenVectors(2, 2) = eigenVectors(2, 1);
+		}
+		else
+		{
+			sortEigenValues.push_back(eigenValues[1]);
+			sortEigenVectors(0, 1) = eigenVectors(0, 1);
+			sortEigenVectors(1, 1) = eigenVectors(1, 1);
+			sortEigenVectors(2, 1) = eigenVectors(2, 1);
+
+			sortEigenValues.push_back(eigenValues[0]);
+			sortEigenVectors(0, 2) = eigenVectors(0, 0);
+			sortEigenVectors(1, 2) = eigenVectors(1, 0);
+			sortEigenVectors(2, 2) = eigenVectors(2, 0);
+		}
+	}
+}

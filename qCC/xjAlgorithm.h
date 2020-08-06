@@ -225,6 +225,14 @@ public:
 	bool xjCreatePolyline(ccPointCloud * cloud, const QString & shpPath);
 	/* create polygon */
 	bool xjCreatePolygon(ccPointCloud * cloud, const QString & shpPath);
+	
+	
+	/* eigen3 */
+
+	/* compute PCA(Principal Component Analysis) */
+	Eigen::Matrix4d xjComputePCA(ccPointCloud * cloud);
+	/* sort eigen vector by eigen values */
+	void xjSortEigenVectorByValues(const Matrix3d & eigenVectors, const std::vector<double>& eigenValues, Matrix3d & sortEigenVectors, std::vector<double>& sortEigenValues);
 };
 
 #endif // !XJ_ALGORITHM

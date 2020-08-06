@@ -1531,6 +1531,7 @@ void MainWindow::doActionEditGlobalShiftAndScale()
 	updateUI();
 }
 
+/* Bounding box P.C.A. fit PCA */
 void MainWindow::doComputeBestFitBB()
 {
 	if (QMessageBox::warning(	this,
@@ -1562,6 +1563,10 @@ void MainWindow::doComputeBestFitBB()
 				{
 					Jacobi<double>::SortEigenValuesAndVectors(eigVectors, eigValues);
 
+					/* xj: eigenValues */
+					ccLog::Print("eigenValues: "+QString::number(eigValues[0]) + ", " + QString::number(eigValues[1]) + ", " + QString::number(eigValues[2]));
+					ccLog::Print("eigenVector:");
+
 					ccGLMatrix trans;
 					GLfloat* rotMat = trans.data();
 					for (unsigned j = 0; j < 3; ++j)
@@ -1575,6 +1580,9 @@ void MainWindow::doComputeBestFitBB()
 						rotMat[j*4]		= static_cast<float>(v.x);
 						rotMat[j*4+1]	= static_cast<float>(v.y);
 						rotMat[j*4+2]	= static_cast<float>(v.z);
+
+						/* xj: eigenVector */
+						ccLog::Print(QString::number(j) + ": " + QString::number(v.x)+", "+ QString::number(v.y)+", "+QString::number(v.z));
 					}
 
 					const CCVector3* G = Yk.getGravityCenter();
@@ -1591,6 +1599,10 @@ void MainWindow::doComputeBestFitBB()
 					putObjectBackIntoDBTree(cloud,objContext);
 
 					entity->prepareDisplayForRefresh_recursive();
+
+					/* xj */
+					ccLog::Print("after invert:"); //full precision
+					ccLog::Print(trans.toString(12, ' ')); //full precision
 				}
 			}
 		}
@@ -11338,21 +11350,27 @@ void MainWindow::on_actionDoTest_triggered()
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
 
-				double x = 0, y = 0, z = 0;
-				for (int i = 0; i < cloud->size(); i++)
-				{
-					x += cloud->getPoint(i)->x;
-					y += cloud->getPoint(i)->y;
-					z += cloud->getPoint(i)->z;
-				}
+				Eigen::Matrix4d matPCA = xjal->xjComputePCA(cloud);
 
-				x /= cloud->size();
-				y /= cloud->size();
-				z /= cloud->size();
-				CCVector3 p(x, y, z);
-				CCVector3d pd = cloud->toGlobal3d(p);
-
-				ccLog::Print(QString::number(pd.x, 'f', 5) + " " + QString::number(pd.y, 'f', 5) + " " + QString::number(pd.z, 'f', 5));
+				/* xj: eigenValues */
+				ccLog::Print("eigenValues: " + QString::number(matPCA(3,0)) + ", " + QString::number(matPCA(3, 1)) + ", " + QString::number(matPCA(3, 2)));
+				ccLog::Print("eigenVector:");
+				ccLog::Print(QString::number(0) + ": " + QString::number(matPCA(0, 0)) + ", " + QString::number(matPCA(1,0)) + ", " + QString::number(matPCA(2, 0)));
+				ccLog::Print(QString::number(1) + ": " + QString::number(matPCA(0, 1)) + ", " + QString::number(matPCA(1,1)) + ", " + QString::number(matPCA(2, 1)));
+				ccLog::Print(QString::number(2) + ": " + QString::number(matPCA(0, 2)) + ", " + QString::number(matPCA(1,2)) + ", " + QString::number(matPCA(2, 2)));
+				//double x = 0, y = 0, z = 0;
+				//for (int i = 0; i < cloud->size(); i++)
+				//{
+				//	x += cloud->getPoint(i)->x;
+				//	y += cloud->getPoint(i)->y;
+				//	z += cloud->getPoint(i)->z;
+				//}
+				//x /= cloud->size();
+				//y /= cloud->size();
+				//z /= cloud->size();
+				//CCVector3 p(x, y, z);
+				//CCVector3d pd = cloud->toGlobal3d(p);
+				//ccLog::Print(QString::number(pd.x, 'f', 5) + " " + QString::number(pd.y, 'f', 5) + " " + QString::number(pd.z, 'f', 5));
 			}
 		}
 	}
