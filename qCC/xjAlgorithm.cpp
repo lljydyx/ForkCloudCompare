@@ -11,6 +11,7 @@ void xjAlgorithm::ViewPartResult(ccPointCloud *cloud, const std::vector<CCVector
 	{
 		ccLog::Error("No enough memory!!!");
 		delete pcPR;
+		pcPR=nullptr;
 		return;
 	}
 	float x = 0, y = 0, z = 0;
@@ -1308,4 +1309,51 @@ void xjAlgorithm::xjSortEigenVectorByValues(const Matrix3d& eigenVectors, const 
 			sortEigenVectors(2, 2) = eigenVectors(2, 0);
 		}
 	}
+}
+
+/* apply PCA */
+ccPointCloud* xjAlgorithm::xjApplyPCA(ccPointCloud *cloud, const Matrix4d& matPCA)
+{
+	ccPointCloud *pcR = new ccPointCloud("PCA");
+	if (!pcR->reserveThePointsTable(cloud->size()))
+	{
+		ccLog::Error("No enough memory!!!");
+		delete pcR;
+		pcR = nullptr;
+
+		return nullptr;
+	}
+
+	double mX = 0, mY = 0, mZ = 0;
+	for (int i = 0; i < cloud->size(); i++)
+	{
+		mX += cloud->getPoint(i)->x;
+		mY += cloud->getPoint(i)->y;
+		mZ += cloud->getPoint(i)->z;
+	}
+	mX /= cloud->size();
+	mY /= cloud->size();
+	mZ /= cloud->size();
+
+	float x = 0, y = 0, z = 0;
+	for (int i = 0; i < cloud->size(); i++)
+	{
+		x = matPCA(0, 0)*(cloud->getPoint(i)->x - mX) + matPCA(1, 0)*(cloud->getPoint(i)->y - mY) + matPCA(2, 0)*(cloud->getPoint(i)->z - mZ);
+		y = matPCA(0, 1)*(cloud->getPoint(i)->x - mX) + matPCA(1, 1)*(cloud->getPoint(i)->y - mY) + matPCA(2, 1)*(cloud->getPoint(i)->z - mZ);
+		z = matPCA(0, 2)*(cloud->getPoint(i)->x - mX) + matPCA(1, 2)*(cloud->getPoint(i)->y - mY) + matPCA(2, 2)*(cloud->getPoint(i)->z - mZ);
+		CCVector3 p(x + mX, y + mY, z + mZ);
+		pcR->addPoint(p);
+	}
+	pcR->invalidateBoundingBox();
+	pcR->setPointSize(cloud->getPointSize() + 2);
+	pcR->colorize(1, 0, 0);
+	pcR->showColors(true);
+	pcR->setGlobalScale(cloud->getGlobalScale());
+	pcR->setGlobalShift(cloud->getGlobalShift());
+	pcR->setDisplay(cloud->getDisplay());
+	pcR->prepareDisplayForRefresh();
+	pcR->refreshDisplay();
+	if (cloud->getParent())
+		cloud->getParent()->addChild(pcR);
+	MainWindow::TheInstance()->addToDB(pcR);
 }

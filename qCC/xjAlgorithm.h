@@ -233,6 +233,8 @@ public:
 	Eigen::Matrix4d xjComputePCA(ccPointCloud * cloud);
 	/* sort eigen vector by eigen values */
 	void xjSortEigenVectorByValues(const Matrix3d & eigenVectors, const std::vector<double>& eigenValues, Matrix3d & sortEigenVectors, std::vector<double>& sortEigenValues);
+	/* apply PCA */
+	ccPointCloud* xjApplyPCA(ccPointCloud * cloud, const Matrix4d & matPCA);
 };
 
 #endif // !XJ_ALGORITHM

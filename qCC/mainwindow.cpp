@@ -11350,7 +11350,11 @@ void MainWindow::on_actionDoTest_triggered()
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
 
+				/* compute PCA */
 				Eigen::Matrix4d matPCA = xjal->xjComputePCA(cloud);
+
+				/* apply PCA */
+				ccPointCloud *pcR = xjal->xjApplyPCA(cloud, matPCA);
 
 				/* xj: eigenValues */
 				ccLog::Print("eigenValues: " + QString::number(matPCA(3,0)) + ", " + QString::number(matPCA(3, 1)) + ", " + QString::number(matPCA(3, 2)));
@@ -11358,19 +11362,6 @@ void MainWindow::on_actionDoTest_triggered()
 				ccLog::Print(QString::number(0) + ": " + QString::number(matPCA(0, 0)) + ", " + QString::number(matPCA(1,0)) + ", " + QString::number(matPCA(2, 0)));
 				ccLog::Print(QString::number(1) + ": " + QString::number(matPCA(0, 1)) + ", " + QString::number(matPCA(1,1)) + ", " + QString::number(matPCA(2, 1)));
 				ccLog::Print(QString::number(2) + ": " + QString::number(matPCA(0, 2)) + ", " + QString::number(matPCA(1,2)) + ", " + QString::number(matPCA(2, 2)));
-				//double x = 0, y = 0, z = 0;
-				//for (int i = 0; i < cloud->size(); i++)
-				//{
-				//	x += cloud->getPoint(i)->x;
-				//	y += cloud->getPoint(i)->y;
-				//	z += cloud->getPoint(i)->z;
-				//}
-				//x /= cloud->size();
-				//y /= cloud->size();
-				//z /= cloud->size();
-				//CCVector3 p(x, y, z);
-				//CCVector3d pd = cloud->toGlobal3d(p);
-				//ccLog::Print(QString::number(pd.x, 'f', 5) + " " + QString::number(pd.y, 'f', 5) + " " + QString::number(pd.z, 'f', 5));
 			}
 		}
 	}
