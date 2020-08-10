@@ -806,6 +806,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionRSE"/>
    <addaction name="actionExtractTrafficMarking"/>
    <addaction name="actionPCtoPolyline"/>
+   <addaction name="actionPCA"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetTest">
    <property name="minimumSize">
@@ -3164,6 +3165,18 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>将点云按照顺序连接，生成闭合矢量线</string>
+   </property>
+  </action>
+  <action name="actionPCA">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/xjPCA.png</normaloff>:/CC/images/xjPCA.png</iconset>
+   </property>
+   <property name="text">
+    <string>PCA 主成分分析</string>
+   </property>
+   <property name="toolTip">
+    <string>PCA 主成分分析</string>
    </property>
   </action>
  </widget>

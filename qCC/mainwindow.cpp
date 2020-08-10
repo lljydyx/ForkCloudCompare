@@ -11207,6 +11207,57 @@ void MainWindow::on_actionPCtoPolyline_triggered()
 	xjal = nullptr;
 }
 
+/* PCA: Principal Component Analysis 主成分分析 */
+void MainWindow::on_actionPCA_triggered()
+{
+	ccProgressDialog pDlg(false, this);
+	pDlg.setAutoClose(true);
+	pDlg.setMethodTitle("...");
+	pDlg.start();
+
+	xjAlgorithm *xjal = new xjAlgorithm();
+	QStringList xjList; xjList.clear();
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	ccHObject* resultContainer = new ccHObject("Tree");
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* To do... */
+				QString cloudName = cloud->getName();
+				if (cloudName.contains(" - Cloud"))
+					cloudName = cloudName.left(cloudName.length() - 8);
+
+				/* compute PCA */
+				Eigen::Matrix4d matPCA = xjal->xjComputePCA(cloud);
+
+				/* apply PCA */
+				ccPointCloud *pcR = xjal->xjApplyPCA(cloud, matPCA);
+
+				/* xj: eigenValues */
+				ccLog::Print("eigenValues: " + QString::number(matPCA(3,0)) + ", " + QString::number(matPCA(3, 1)) + ", " + QString::number(matPCA(3, 2)));
+				ccLog::Print("eigenVector:");
+				ccLog::Print(QString::number(0) + ": " + QString::number(matPCA(0, 0)) + ", " + QString::number(matPCA(1,0)) + ", " + QString::number(matPCA(2, 0)));
+				ccLog::Print(QString::number(1) + ": " + QString::number(matPCA(0, 1)) + ", " + QString::number(matPCA(1,1)) + ", " + QString::number(matPCA(2, 1)));
+				ccLog::Print(QString::number(2) + ": " + QString::number(matPCA(0, 2)) + ", " + QString::number(matPCA(1,2)) + ", " + QString::number(matPCA(2, 2)));
+			}
+		}
+	}
+	
+	addToDB(xjList,0, 0);
+	refreshAll();
+	updateUI();
+
+	delete xjal;
+	xjal = nullptr;
+
+	ccLog::Print("[Tree Extract] OK");
+}
+
+
 /* 测试 */
 void MainWindow::on_actionDoTest_triggered()
 {
@@ -11350,23 +11401,11 @@ void MainWindow::on_actionDoTest_triggered()
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
 
-				/* compute PCA */
-				Eigen::Matrix4d matPCA = xjal->xjComputePCA(cloud);
-
-				/* apply PCA */
-				ccPointCloud *pcR = xjal->xjApplyPCA(cloud, matPCA);
-
-				/* xj: eigenValues */
-				ccLog::Print("eigenValues: " + QString::number(matPCA(3,0)) + ", " + QString::number(matPCA(3, 1)) + ", " + QString::number(matPCA(3, 2)));
-				ccLog::Print("eigenVector:");
-				ccLog::Print(QString::number(0) + ": " + QString::number(matPCA(0, 0)) + ", " + QString::number(matPCA(1,0)) + ", " + QString::number(matPCA(2, 0)));
-				ccLog::Print(QString::number(1) + ": " + QString::number(matPCA(0, 1)) + ", " + QString::number(matPCA(1,1)) + ", " + QString::number(matPCA(2, 1)));
-				ccLog::Print(QString::number(2) + ": " + QString::number(matPCA(0, 2)) + ", " + QString::number(matPCA(1,2)) + ", " + QString::number(matPCA(2, 2)));
 			}
 		}
 	}
-	
-	addToDB(xjList,0, 0);
+
+	addToDB(xjList, 0, 0);
 	refreshAll();
 	updateUI();
 

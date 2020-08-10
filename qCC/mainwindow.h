@@ -329,6 +329,8 @@ private slots:
 	void on_actionRSE_triggered();
 	/* 点云生闭合矢量线 Point clouds are connected in order to generate closed vector lines. */
 	void on_actionPCtoPolyline_triggered();
+	/* PCA: Principal Component Analysis 主成分分析 */
+	void on_actionPCA_triggered();
 	/* 测试 */
 	void on_actionDoTest_triggered();
 
