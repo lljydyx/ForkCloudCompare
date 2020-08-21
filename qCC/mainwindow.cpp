@@ -11218,7 +11218,7 @@ void MainWindow::on_actionPCA_triggered()
 	xjAlgorithm *xjal = new xjAlgorithm();
 	QStringList xjList; xjList.clear();
 	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
-	ccHObject* resultContainer = new ccHObject("Tree");
+	ccHObject* resultContainer = new ccHObject("PCA");
 	for (ccHObject *entity : selectedEntities)
 	{
 		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
@@ -11254,7 +11254,7 @@ void MainWindow::on_actionPCA_triggered()
 	delete xjal;
 	xjal = nullptr;
 
-	ccLog::Print("[Tree Extract] OK");
+	ccLog::Print("[PCA] OK");
 }
 
 

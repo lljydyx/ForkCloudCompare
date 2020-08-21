@@ -1186,22 +1186,25 @@ Eigen::Matrix4d xjAlgorithm::xjComputePCA(ccPointCloud *cloud)
 
 	/* ------------------ */
 	Matrix3d eMat;
-	//eMat(0, 0) = mXX - meanX * meanX; eMat(0, 1) = mXY - meanX * meanY; eMat(0, 2) = mXZ - meanX * meanZ;
-	//eMat(1, 0) = mXY - meanX * meanY; eMat(1, 1) = mYY - meanY * meanY; eMat(1, 2) = mYZ - meanY * meanZ;
-	//eMat(2, 0) = mXZ - meanX * meanZ; eMat(2, 1) = mYZ - meanY * meanZ; eMat(2, 2) = mZZ - meanZ * meanZ;
 	eMat(0, 0) = mXX; eMat(0, 1) = mXY; eMat(0, 2) = mXZ;
-	eMat(1, 0) = mYY; eMat(1, 1) = mYY; eMat(1, 2) = mYZ;
+	eMat(1, 0) = mXY; eMat(1, 1) = mYY; eMat(1, 2) = mYZ;
 	eMat(2, 0) = mXZ; eMat(2, 1) = mYZ; eMat(2, 2) = mZZ;
 
-	Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
-	Matrix3d eVector = xjMat.pseudoEigenvectors();
-	Matrix3d eValue = xjMat.pseudoEigenvalueMatrix();
-	std::vector<double> eigenValues = { eValue(0, 0),eValue(1, 1),eValue(2, 2) };
+	/* SVD�ֽ⣺A = U * S * V.T */
+	JacobiSVD<Eigen::MatrixXd> svd(eMat, ComputeThinU | ComputeThinV);
+	Matrix3d U = svd.matrixU(), V = svd.matrixV();
+	Matrix3d S = U.inverse() * eMat * V.transpose().inverse();
+	std::vector<double> eigenValues = { S(0, 0),S(1, 1),S(2, 2) };
+	///*  */
+	//Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
+	//Matrix3d eVector = xjMat.pseudoEigenvectors();
+	//Matrix3d eValue = xjMat.pseudoEigenvalueMatrix();
+	//std::vector<double> eigenValues = { eValue(0, 0),eValue(1, 1),eValue(2, 2) };
 
 	/* result */
 	Matrix3d sortEigenVectors;
 	std::vector<double> sortEigenValues;
-	xjSortEigenVectorByValues(eVector, eigenValues, sortEigenVectors, sortEigenValues);
+	xjSortEigenVectorByValues(U, eigenValues, sortEigenVectors, sortEigenValues);
 
 	Matrix4d matPCA;
 	matPCA(0, 0) = sortEigenVectors(0, 0); matPCA(0, 1) = sortEigenVectors(0, 1); matPCA(0, 2) = sortEigenVectors(0, 2); matPCA(0, 3) = 0;
