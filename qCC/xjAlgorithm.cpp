@@ -605,41 +605,48 @@ int xjAlgorithm::xjEigenValueVectorShape(const QList<xjPoint> &listP, double &in
 {
 	int shape = 1;
 
-	double sumX = 0, sumY = 0, sumZ = 0;
-	double meanX = 0, meanY = 0, meanZ = 0;
-	double matXX = 0, matYY = 0, matZZ = 0;
-	double matXY = 0, matXZ = 0, matYZ = 0;
+
+#pragma region average
+	float meanX = 0.0f, meanY = 0.0f, meanZ = 0.0f;
 	int count = listP.size();
-	for (int i = 0; i < count; i++)
+	for (unsigned i = 0; i < count; i++)
 	{
-		sumX += listP.at(i).x;
-		sumY += listP.at(i).y;
-		sumZ += listP.at(i).z;
-
-		matXX += listP.at(i).x * listP.at(i).x;
-		matYY += listP.at(i).y * listP.at(i).y;
-		matZZ += listP.at(i).z * listP.at(i).z;
-
-		matXY += listP.at(i).x * listP.at(i).y;
-		matXZ += listP.at(i).x * listP.at(i).z;
-		matYZ += listP.at(i).y * listP.at(i).z;
+		meanX += listP.at(i).x;
+		meanY += listP.at(i).y;
+		meanZ += listP.at(i).z;
 	}
+	meanX /= count;
+	meanY /= count;
+	meanZ /= count;
+#pragma endregion
 
-	meanX = sumX / count;
-	meanY = sumY / count;
-	meanZ = sumZ / count;
-	matXX /= count;
-	matYY /= count;
-	matZZ /= count;
-	matXY /= count;
-	matXZ /= count;
-	matYZ /= count;
+	double mXX = 0.0;
+	double mYY = 0.0;
+	double mZZ = 0.0;
+	double mXY = 0.0;
+	double mXZ = 0.0;
+	double mYZ = 0.0;
+	for (int i = 0; i < count; ++i)
+	{
+		mXX += static_cast<double>(listP.at(i).x - meanX)*(listP.at(i).x - meanX);
+		mYY += static_cast<double>(listP.at(i).y - meanY)*(listP.at(i).y - meanY);
+		mZZ += static_cast<double>(listP.at(i).z - meanZ)*(listP.at(i).z - meanZ);
+		mXY += static_cast<double>(listP.at(i).x - meanX)*(listP.at(i).y - meanY);
+		mXZ += static_cast<double>(listP.at(i).x - meanX)*(listP.at(i).z - meanZ);
+		mYZ += static_cast<double>(listP.at(i).y - meanY)*(listP.at(i).z - meanZ);
+	}
+	mXX /= count;
+	mYY /= count;
+	mZZ /= count;
+	mXY /= count;
+	mXZ /= count;
+	mYZ /= count;
 
 	/* 协方差矩阵 */
 	Matrix3d eMat;
-	eMat(0, 0) = matXX - meanX * meanX; eMat(0, 1) = matXY - meanX * meanY; eMat(0, 2) = matXZ - meanX * meanZ;
-	eMat(1, 0) = matXY - meanX * meanY; eMat(1, 1) = matYY - meanY * meanY; eMat(1, 2) = matYZ - meanY * meanZ;
-	eMat(2, 0) = matXZ - meanX * meanZ; eMat(2, 1) = matYZ - meanY * meanZ; eMat(2, 2) = matZZ - meanZ * meanZ;
+	eMat(0, 0) = mXX; eMat(0, 1) = mXY; eMat(0, 2) = mXZ;
+	eMat(1, 0) = mXY; eMat(1, 1) = mYY; eMat(1, 2) = mYZ;
+	eMat(2, 0) = mXZ; eMat(2, 1) = mYZ; eMat(2, 2) = mZZ;
 
 	/* 特征值和特征向量 */
 	Eigen::EigenSolver<Eigen::Matrix3d> xjMat(eMat);
