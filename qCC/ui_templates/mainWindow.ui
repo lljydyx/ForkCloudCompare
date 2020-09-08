@@ -819,7 +819,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <set>Qt::BottomDockWidgetArea</set>
    </property>
    <property name="windowTitle">
-    <string>Test</string>
+    <string>结果信息</string>
    </property>
    <attribute name="dockWidgetArea">
     <number>8</number>
@@ -922,6 +922,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionAbout">

@@ -204,7 +204,7 @@ MainWindow::MainWindow()
 {
 	m_UI->setupUi( this );
 
-	setWindowTitle(tr("累了就要打游戏   CloudCompare v") + ccApp->versionLongStr(false));
+	setWindowTitle(tr("点云特征分析软件 v1.0"));
 	
 	m_pluginUIManager = new ccPluginUIManager( this, this );
 	

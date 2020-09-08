@@ -61,7 +61,6 @@
 
 int main(int argc, char **argv)
 {
-	QApplication::setStyle("fusion");//XXX 界面风格
 #ifdef _WIN32 //This will allow printf to function on windows when opened from command line	
 	DWORD stdout_type = GetFileType(GetStdHandle(STD_OUTPUT_HANDLE));
 	if (AttachConsole(ATTACH_PARENT_PROCESS))
