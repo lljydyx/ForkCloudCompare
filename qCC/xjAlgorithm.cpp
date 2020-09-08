@@ -1154,7 +1154,7 @@ bool xjAlgorithm::xjCreatePolygon(ccPointCloud* cloud, const QString &shpPath)
 /* compute PCA(Principal Component Analysis) */
 Eigen::Matrix4d xjAlgorithm::xjComputePCA(ccPointCloud *cloud)
 {
-#pragma region average
+#pragma region covariance mtrix
 	float meanX = 0.0f, meanY = 0.0f, meanZ = 0.0f;
 	unsigned count = cloud->size();
 	for (unsigned i = 0; i < count; i++)
@@ -1166,9 +1166,7 @@ Eigen::Matrix4d xjAlgorithm::xjComputePCA(ccPointCloud *cloud)
 	meanX /= count;
 	meanY /= count;
 	meanZ /= count;
-#pragma endregion
 
-#pragma region covariance mtrix
 	double mXX = 0.0;
 	double mYY = 0.0;
 	double mZZ = 0.0;
@@ -1196,7 +1194,46 @@ Eigen::Matrix4d xjAlgorithm::xjComputePCA(ccPointCloud *cloud)
 	eMat(0, 0) = mXX; eMat(0, 1) = mXY; eMat(0, 2) = mXZ;
 	eMat(1, 0) = mXY; eMat(1, 1) = mYY; eMat(1, 2) = mYZ;
 	eMat(2, 0) = mXZ; eMat(2, 1) = mYZ; eMat(2, 2) = mZZ;
+#pragma endregion
 
+#pragma region MyRegion
+	//double meanX = 0, meanY = 0, meanZ = 0;
+	//double meanXX = 0, meanYY = 0, meanZZ = 0;
+	//double meanXY = 0, meanXZ = 0, meanYZ = 0;
+	//unsigned count = cloud->size();
+	//for (int i = 0; i < count; i++)
+	//{
+	//	meanX += cloud->getPoint(i)->x;
+	//	meanY += cloud->getPoint(i)->y;
+	//	meanZ += cloud->getPoint(i)->z;
+
+	//	meanXX += cloud->getPoint(i)->x * cloud->getPoint(i)->x;
+	//	meanYY += cloud->getPoint(i)->y * cloud->getPoint(i)->y;
+	//	meanZZ += cloud->getPoint(i)->z * cloud->getPoint(i)->z;
+
+	//	meanXY += cloud->getPoint(i)->x * cloud->getPoint(i)->y;
+	//	meanXZ += cloud->getPoint(i)->x * cloud->getPoint(i)->z;
+	//	meanYZ += cloud->getPoint(i)->y * cloud->getPoint(i)->z;
+	//}
+	//meanX /= count;
+	//meanY /= count;
+	//meanZ /= count;
+	//meanXX /= count;
+	//meanYY /= count;
+	//meanZZ /= count;
+	//meanXY /= count;
+	//meanXZ /= count;
+	//meanYZ /= count;
+
+	///* eigenvector */
+	//Matrix3d eMat;
+	//eMat(0, 0) = meanXX - meanX * meanX; eMat(0, 1) = meanXY - meanX * meanY; eMat(0, 2) = meanXZ - meanX * meanZ;
+	//eMat(1, 0) = meanXY - meanX * meanY; eMat(1, 1) = meanYY - meanY * meanY; eMat(1, 2) = meanYZ - meanY * meanZ;
+	//eMat(2, 0) = meanXZ - meanX * meanZ; eMat(2, 1) = meanYZ - meanY * meanZ; eMat(2, 2) = meanZZ - meanZ * meanZ;
+#pragma endregion
+
+
+#pragma region covariance mtrix
 	/* SVD�ֽ⣺A = U * S * V.T */
 	JacobiSVD<Eigen::MatrixXd> svd(eMat, ComputeThinU | ComputeThinV);
 	Matrix3d U = svd.matrixU(), V = svd.matrixV();
