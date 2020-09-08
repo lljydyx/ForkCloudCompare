@@ -132,6 +132,20 @@ int main(int argc, char **argv)
 		}
 	}
 
+#pragma region //XXXÖÐÎÄ
+	//PointCloud
+	QString langFilename = "translation_chinese.qm";
+	//Load translation file
+	if (translator.load(langFilename, QCoreApplication::applicationDirPath()))
+	{
+		qApp->installTranslator(&translator);
+	}
+	else
+	{
+		QMessageBox::warning(0, QObject::tr("Translation"), QObject::tr("Failed to load language file¡ª¡ªPointCloud'%1'").arg(langFilename));
+	}
+#pragma endregion
+
 	////splash screen
 	//QScopedPointer<QSplashScreen> splash(nullptr);
 	//QTimer splashTimer;
@@ -177,7 +191,7 @@ int main(int argc, char **argv)
 			QMessageBox::critical(nullptr, "Error", "Failed to initialize the main application window?!");
 			return EXIT_FAILURE;
 		}
-		mainWindow->initPlugins();
+		//mainWindow->initPlugins();
 		mainWindow->show();
 		QApplication::processEvents();
 

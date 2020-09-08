@@ -371,17 +371,17 @@ void MainWindow::initPlugins( )
 	addToolBar( Qt::RightToolBarArea, m_pluginUIManager->glFiltersToolbar() );
 	addToolBar( Qt::RightToolBarArea, m_pluginUIManager->mainPluginToolbar() );
 	
-	for ( QToolBar *toolbar : m_pluginUIManager->additionalPluginToolbars() )
-	{
-		addToolBar( Qt::TopToolBarArea, toolbar );
-	}
+	//for ( QToolBar *toolbar : m_pluginUIManager->additionalPluginToolbars() )
+	//{
+	//	addToolBar( Qt::TopToolBarArea, toolbar );
+	//}
 	
-	// Set up dynamic menus
-	m_UI->menubar->insertMenu( m_UI->menu3DViews->menuAction(), m_pluginUIManager->pluginMenu() );
-	m_UI->menuDisplay->insertMenu( m_UI->menuActiveScalarField->menuAction(), m_pluginUIManager->shaderAndFilterMenu() );
+	//// Set up dynamic menus
+	//m_UI->menubar->insertMenu( m_UI->menu3DViews->menuAction(), m_pluginUIManager->pluginMenu() );
+	//m_UI->menuDisplay->insertMenu( m_UI->menuActiveScalarField->menuAction(), m_pluginUIManager->shaderAndFilterMenu() );
 
-	m_UI->menuToolbars->addAction( m_pluginUIManager->actionShowMainPluginToolbar() );
-	m_UI->menuToolbars->addAction( m_pluginUIManager->actionShowGLFilterToolbar() );
+	//m_UI->menuToolbars->addAction( m_pluginUIManager->actionShowMainPluginToolbar() );
+	//m_UI->menuToolbars->addAction( m_pluginUIManager->actionShowGLFilterToolbar() );
 }
 
 void MainWindow::doEnableQtWarnings(bool state)
@@ -6088,13 +6088,13 @@ void MainWindow::freezeUI(bool state)
 	m_UI->toolBarMainTools->setDisabled(state);
 	m_UI->toolBarSFTools->setDisabled(state);
 	
-	m_pluginUIManager->mainPluginToolbar()->setDisabled(state);
+	//m_pluginUIManager->mainPluginToolbar()->setDisabled(state);
 
-	//freeze plugin toolbars
-	for ( QToolBar *toolbar : m_pluginUIManager->additionalPluginToolbars() )
-	{
-		toolbar->setDisabled(state);
-	}
+	////freeze plugin toolbars
+	//for ( QToolBar *toolbar : m_pluginUIManager->additionalPluginToolbars() )
+	//{
+	//	toolbar->setDisabled(state);
+	//}
 
 	m_UI->DockableDBTree->setDisabled(state);
 	m_UI->menubar->setDisabled(state);

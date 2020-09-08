@@ -53,10 +53,10 @@ void ccPluginUIManager::init()
 {
 	auto plugins = ccPluginManager::get().pluginList();
 	
-	m_pluginMenu->setEnabled( false );
+	//m_pluginMenu->setEnabled( false );
 	m_glFilterMenu->setEnabled( false );
 	
-	m_mainPluginToolbar->setVisible( false );
+	//m_mainPluginToolbar->setVisible( false );
 		
 	QVector<ccStdPluginInterface *>	coreStdPlugins;
 	QVector<ccStdPluginInterface *>	thirdPartyStdPlugins;
@@ -203,17 +203,17 @@ void ccPluginUIManager::init()
 		}
 	}
 	
-	m_pluginMenu->setEnabled( !m_pluginMenu->isEmpty() );
+	//m_pluginMenu->setEnabled( !m_pluginMenu->isEmpty() );
 	
-	if ( m_mainPluginToolbar->isEnabled() )
-	{
-		m_showPluginToolbar->setEnabled( true );
-	}
+	//if ( m_mainPluginToolbar->isEnabled() )
+	//{
+	//	m_showPluginToolbar->setEnabled( true );
+	//}
 	
 	m_glFilterMenu->setEnabled( !m_glFilterMenu->isEmpty() );
 	m_glFiltersToolbar->setEnabled( !m_glFilterMenu->isEmpty() );	// [sic] we have toolbar actions if we have them in the menu
 	
-	m_showPluginToolbar->setChecked( m_mainPluginToolbar->isEnabled() );
+	//m_showPluginToolbar->setChecked( m_mainPluginToolbar->isEnabled() );
 	
 	if ( m_glFiltersToolbar->isEnabled() )
 	{
@@ -305,9 +305,9 @@ void ccPluginUIManager::setupActions()
 	
 	connect( m_actionRemoveFilter, &QAction::triggered, this, &ccPluginUIManager::disableGLFilter );
 	
-	m_showPluginToolbar = new QAction( tr( "Plugins" ), this );
-	m_showPluginToolbar->setCheckable( true );
-	m_showPluginToolbar->setEnabled( false );
+	//m_showPluginToolbar = new QAction( tr( "Plugins" ), this );//XXX
+	//m_showPluginToolbar->setCheckable( true );
+	//m_showPluginToolbar->setEnabled( false );
 	
 	m_showGLFilterToolbar = new QAction( tr( "GL Filters" ), this );
 	m_showGLFilterToolbar->setCheckable( true );
@@ -316,7 +316,7 @@ void ccPluginUIManager::setupActions()
 
 void ccPluginUIManager::setupMenus()
 {	
-	m_pluginMenu = new QMenu( tr( "Plugins" ), m_parentWidget );
+	//m_pluginMenu = new QMenu( tr( "Plugins" ), m_parentWidget );//XXX
 	
 	m_glFilterMenu = new QMenu( tr( "Shaders && Filters" ), m_parentWidget );
 	
@@ -352,11 +352,12 @@ void ccPluginUIManager::addActionsToMenu( ccStdPluginInterface *stdPlugin, const
 
 void ccPluginUIManager::setupToolbars()
 {
-	m_mainPluginToolbar = new QToolBar( tr( "Plugins" ), m_parentWidget );
-	
-	m_mainPluginToolbar->setObjectName( QStringLiteral( "Main Plugin Toolbar" ) );
-	
-	connect( m_showPluginToolbar, &QAction::toggled, m_mainPluginToolbar, &QToolBar::setVisible );
+	////XXX
+	//m_mainPluginToolbar = new QToolBar( tr( "Plugins" ), m_parentWidget );
+	//
+	//m_mainPluginToolbar->setObjectName( QStringLiteral( "Main Plugin Toolbar" ) );
+	//
+	//connect( m_showPluginToolbar, &QAction::toggled, m_mainPluginToolbar, &QToolBar::setVisible );
 	
 	m_glFiltersToolbar = new QToolBar( tr( "GL Filters" ), m_parentWidget );
 	
