@@ -286,6 +286,10 @@ MainWindow::MainWindow()
 	}
 
 	connectActions();
+#pragma region //XXX
+	m_UI->menuHelp->menuAction()->setVisible(false);
+	m_UI->menuDisplay->menuAction()->setVisible(false);
+#pragma endregion
 
 	new3DView(true);
 

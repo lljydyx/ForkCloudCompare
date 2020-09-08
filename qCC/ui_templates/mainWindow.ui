@@ -1004,6 +1004,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Compute octree</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionConsole">
    <property name="checkable">
@@ -2245,6 +2248,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="text">
     <string>Primitive factory</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionToggleMaterials">
    <property name="text">
@@ -2895,6 +2901,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>Set Global Shift &amp; Scale mechanism parameters</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionEnableCameraLink">
