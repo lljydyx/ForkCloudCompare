@@ -149,6 +149,7 @@
 		<file>images/xjPointLine.png</file>
 		<file>images/xjPointPolygon.png</file>
 		<file>images/xjPCA.png</file>
+		<file>images/xjLogo.png</file>
     </qresource>
     <qresource prefix="/CC/Icons">
         <file>images/icon/cc_viewer_icon_16.png</file>

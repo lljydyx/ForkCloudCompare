@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icones.qrc">
-    <normaloff>:/CC/Icons/images/icon/xj.jpg</normaloff>:/CC/Icons/images/icon/xj.jpg</iconset>
+    <normaloff>:/CC/images/xjLogo.png</normaloff>:/CC/images/xjLogo.png</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>true</bool>
@@ -129,7 +129,7 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>特征分析</string>
     </property>
     <widget class="QMenu" name="menuScalarFields">
      <property name="title">
@@ -500,7 +500,13 @@
     <addaction name="menuSandBox"/>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>渲染</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menu"/>
    <addaction name="menuEdit"/>
    <addaction name="menuTools"/>
    <addaction name="menuDisplay"/>
@@ -1123,6 +1129,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Finely registers already (roughly) aligned entities (clouds or meshes)</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionCloudCloudDist">
    <property name="icon">
@@ -1138,6 +1147,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Compute cloud/cloud distance</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionCloudMeshDist">
    <property name="icon">
@@ -1152,6 +1164,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Compute cloud/mesh distance</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionStatisticalTest">
@@ -1183,6 +1198,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Sample points on a mesh</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionLabelConnectedComponents">
    <property name="icon">
@@ -1197,6 +1215,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Label connected components</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionSegment">
@@ -1221,6 +1242,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="text">
     <string>Translate/Rotate</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionShowHistogram">
@@ -1542,6 +1566,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>Z</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionSetViewTop">
@@ -1874,6 +1901,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="toolTip">
     <string>Convert a cloud to 2D raster (and optionally generate the contour plot)</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionAlign">
    <property name="text">
@@ -1899,6 +1929,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Subsample a point cloud</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionLoadShader">
@@ -1950,6 +1983,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="text">
     <string>Camera settings</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionPointListPicking">
@@ -2112,6 +2148,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionComputeDistancesFromSensor">
    <property name="text">
@@ -2202,6 +2241,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Aligns two clouds by picking (at least 4) equivalent point pairs</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionAddConstantSF">
@@ -2376,6 +2418,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionSetViewIso2">
    <property name="icon">
@@ -2396,6 +2441,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionConvertTextureToColor">
@@ -2435,6 +2483,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>X</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionEditGlobalShiftAndScale">
@@ -2728,6 +2779,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="toolTip">
     <string>Extract cloud sections along polylines or unfold a cloud along a polyline</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionConvertPolylinesToMesh">
    <property name="text">
@@ -2747,6 +2801,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>Pick three points to make a cloud or mesh 'level'</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionFitSphere">
@@ -2821,6 +2878,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionComputePointsVisibility">
    <property name="text">
@@ -2885,6 +2945,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionEnableQtWarnings">
@@ -2992,6 +3055,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionShowCursor3DCoordinates">
@@ -3121,6 +3187,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Compute cloud/Primitive distance</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionExportNormalToSF">
