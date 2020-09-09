@@ -300,7 +300,7 @@ MainWindow::MainWindow()
 
 	updateUI();
 
-	QMainWindow::statusBar()->showMessage(QString("Ready"));
+	QMainWindow::statusBar()->showMessage(QString("×¼±¸¾ÍÐ÷"));
 	
 #ifdef USE_TBB
 	ccConsole::Print( QStringLiteral( "[TBB] Using Intel's Threading Building Blocks %1.%2" )
