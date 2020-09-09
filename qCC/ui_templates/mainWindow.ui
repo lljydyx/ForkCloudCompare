@@ -44,7 +44,7 @@
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>&amp;File</string>
+     <string>文件</string>
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
@@ -352,7 +352,7 @@
    </widget>
    <widget class="QMenu" name="menu3DViews">
     <property name="title">
-     <string>3D &amp;Views</string>
+     <string>3D视图</string>
     </property>
     <addaction name="actionNew3DView"/>
     <addaction name="separator"/>
@@ -502,15 +502,15 @@
    </widget>
    <widget class="QMenu" name="menu">
     <property name="title">
-     <string>渲染</string>
+     <string>浏览查询</string>
     </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu"/>
    <addaction name="menuEdit"/>
+   <addaction name="menu3DViews"/>
    <addaction name="menuTools"/>
    <addaction name="menuDisplay"/>
-   <addaction name="menu3DViews"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QDockWidget" name="DockableDBTree">
@@ -587,13 +587,13 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Viewing tools</string>
    </property>
    <attribute name="toolBarArea">
-    <enum>LeftToolBarArea</enum>
+    <enum>TopToolBarArea</enum>
    </attribute>
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionDisplayOptions"/>
-   <addaction name="actionEditCamera"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionSave"/>
    <addaction name="actionGlobalZoom"/>
    <addaction name="actionPickRotationCenter"/>
    <addaction name="actionAutoPickRotationCenter"/>
@@ -608,6 +608,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionSetViewIso1"/>
    <addaction name="actionSetViewIso2"/>
    <addaction name="actionEnableStereo"/>
+   <addaction name="actionPointPicking"/>
   </widget>
   <widget class="QDockWidget" name="DockableConsole">
    <property name="sizePolicy">
@@ -686,13 +687,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionOpen"/>
-   <addaction name="actionSave"/>
    <addaction name="separator"/>
-   <addaction name="actionPointPicking"/>
-   <addaction name="actionPointListPicking"/>
-   <addaction name="actionTracePolyline"/>
-   <addaction name="actionClone"/>
    <addaction name="actionMerge"/>
    <addaction name="actionDelete"/>
    <addaction name="separator"/>
@@ -707,6 +702,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionPrimitiveFactory"/>
    <addaction name="actionRasterize"/>
    <addaction name="actionSORFilter"/>
+   <addaction name="actionEditCamera"/>
    <addaction name="separator"/>
    <addaction name="actionSegment"/>
    <addaction name="actionTranslateRotate"/>
@@ -918,6 +914,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="text">
     <string>Display settings</string>
    </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actionHelp">
    <property name="text">
@@ -1087,6 +1086,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="toolTip">
     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clone the selected entities&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;(yes Claire ... these are Nyan sheep!)&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionMerge">
    <property name="icon">
@@ -1098,6 +1100,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>Merge multiple clouds</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionDelete">
@@ -1113,6 +1118,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionRegister">
@@ -1231,6 +1239,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="shortcut">
     <string>T</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionTranslateRotate">
    <property name="checkable">
@@ -1255,6 +1266,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="text">
     <string>Show histogram</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionComputeStatParams">
    <property name="icon">
@@ -1270,6 +1284,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Fits a statistical model on the active scalar field</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionFilterByValue">
    <property name="icon">
@@ -1284,6 +1301,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Filter points by value</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionGaussianFilter">
@@ -1318,6 +1338,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Delete current scalar field</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionScalarFieldArithmetic">
    <property name="icon">
@@ -1335,6 +1358,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Add, subtract, multiply or divide two scalar fields</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionColorize">
@@ -1790,6 +1816,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="text">
     <string>Global Zoom</string>
    </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actionToggleCenteredPerspective">
    <property name="icon">
@@ -1964,6 +1993,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="statusTip">
     <string>Point picking (point information, distance between 2 points, angles between 3 points, etc.)</string>
    </property>
+   <property name="visible">
+    <bool>true</bool>
+   </property>
   </action>
   <action name="actionComputeBestFitBB">
    <property name="text">
@@ -1998,6 +2030,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="statusTip">
     <string>Pick several points (and export them to ASCII file, a new cloud, etc.)</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionCurvature">
@@ -2254,6 +2289,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="text">
     <string>Add constant SF</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionExportCoordToSF">
    <property name="text">
@@ -2468,6 +2506,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionCrossSection">
@@ -2857,6 +2898,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="toolTip">
     <string>Statistical Outlier Filter (remove the points far from their neighbors)</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionEnableStereo">
    <property name="checkable">
@@ -3211,6 +3255,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="toolTip">
     <string>矢量化交通标线</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionDoTest">
    <property name="icon">
@@ -3222,6 +3269,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>测试</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionRSE">
@@ -3235,6 +3285,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    <property name="toolTip">
     <string>路面点云检测</string>
    </property>
+   <property name="visible">
+    <bool>false</bool>
+   </property>
   </action>
   <action name="actionPCtoPolyline">
    <property name="icon">
@@ -3246,6 +3299,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>将点云按照顺序连接，生成闭合矢量线</string>
+   </property>
+   <property name="visible">
+    <bool>false</bool>
    </property>
   </action>
   <action name="actionPCA">
