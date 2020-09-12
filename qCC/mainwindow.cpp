@@ -289,7 +289,6 @@ MainWindow::MainWindow()
 #pragma region //XXX
 	m_UI->menuHelp->menuAction()->setVisible(false);
 	m_UI->menuDisplay->menuAction()->setVisible(false);
-	m_UI->menuTools->menuAction()->setVisible(false);
 #pragma endregion
 
 	new3DView(true);

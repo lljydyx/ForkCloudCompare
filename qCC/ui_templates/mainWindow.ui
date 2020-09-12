@@ -129,7 +129,7 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>特征分析</string>
+     <string>浏览查询</string>
     </property>
     <widget class="QMenu" name="menuScalarFields">
      <property name="title">
@@ -370,7 +370,7 @@
    </widget>
    <widget class="QMenu" name="menuTools">
     <property name="title">
-     <string>Tools</string>
+     <string>特征分析</string>
     </property>
     <widget class="QMenu" name="menuSegmentation">
      <property name="title">
@@ -500,16 +500,10 @@
     <addaction name="menuSandBox"/>
     <addaction name="separator"/>
    </widget>
-   <widget class="QMenu" name="menu">
-    <property name="title">
-     <string>浏览查询</string>
-    </property>
-   </widget>
    <addaction name="menuFile"/>
-   <addaction name="menu"/>
    <addaction name="menuEdit"/>
-   <addaction name="menu3DViews"/>
    <addaction name="menuTools"/>
+   <addaction name="menu3DViews"/>
    <addaction name="menuDisplay"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -1267,7 +1261,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Show histogram</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionComputeStatParams">
@@ -1285,7 +1279,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Fits a statistical model on the active scalar field</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionFilterByValue">
@@ -1303,7 +1297,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Filter points by value</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionGaussianFilter">
@@ -1339,7 +1333,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Delete current scalar field</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionScalarFieldArithmetic">
@@ -1360,7 +1354,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Add, subtract, multiply or divide two scalar fields</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionColorize">
@@ -2017,7 +2011,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Camera settings</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionPointListPicking">
@@ -2032,7 +2026,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Pick several points (and export them to ASCII file, a new cloud, etc.)</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionCurvature">
@@ -2042,7 +2036,7 @@ QTreeView::branch:open:has-children:has-siblings  {
   </action>
   <action name="actionRoughness">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>Roughness</string>
@@ -2888,6 +2882,9 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
   </action>
   <action name="actionSORFilter">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../icones.qrc">
      <normaloff>:/CC/images/ccSORFilter.png</normaloff>:/CC/images/ccSORFilter.png</iconset>
@@ -2899,7 +2896,7 @@ QTreeView::branch:open:has-children:has-siblings  {
     <string>Statistical Outlier Filter (remove the points far from their neighbors)</string>
    </property>
    <property name="visible">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionEnableStereo">
