@@ -204,7 +204,7 @@ MainWindow::MainWindow()
 {
 	m_UI->setupUi( this );
 
-	setWindowTitle(tr("点云特征分析软件 v1.0"));
+	setWindowTitle(tr("点云去噪软件 v1.0"));
 	
 	m_pluginUIManager = new ccPluginUIManager( this, this );
 	
@@ -289,6 +289,7 @@ MainWindow::MainWindow()
 #pragma region //XXX
 	m_UI->menuHelp->menuAction()->setVisible(false);
 	m_UI->menuDisplay->menuAction()->setVisible(false);
+	m_UI->menu3DViews->menuAction()->setVisible(false);
 #pragma endregion
 
 	new3DView(true);

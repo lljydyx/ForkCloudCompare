@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icones.qrc">
-    <normaloff>:/CC/images/xjLogo.png</normaloff>:/CC/images/xjLogo.png</iconset>
+    <normaloff>:/CC/images/xjLogo2.png</normaloff>:/CC/images/xjLogo2.png</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>true</bool>
@@ -603,6 +603,10 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionSetViewIso2"/>
    <addaction name="actionEnableStereo"/>
    <addaction name="actionPointPicking"/>
+   <addaction name="scVoxelUS"/>
+   <addaction name="scVoxelDenoising"/>
+   <addaction name="scSOR"/>
+   <addaction name="scDBSCAN"/>
   </widget>
   <widget class="QDockWidget" name="DockableConsole">
    <property name="sizePolicy">
@@ -3311,6 +3315,42 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>PCA 主成分分析</string>
+   </property>
+  </action>
+  <action name="scVoxelUS">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/ccSampleCloud.png</normaloff>:/CC/images/ccSampleCloud.png</iconset>
+   </property>
+   <property name="text">
+    <string>体素下采样</string>
+   </property>
+  </action>
+  <action name="scVoxelDenoising">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/ccPointSize.png</normaloff>:/CC/images/ccPointSize.png</iconset>
+   </property>
+   <property name="text">
+    <string>体素去噪</string>
+   </property>
+  </action>
+  <action name="scSOR">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/ccSORFilter.png</normaloff>:/CC/images/ccSORFilter.png</iconset>
+   </property>
+   <property name="text">
+    <string>SOR</string>
+   </property>
+  </action>
+  <action name="scDBSCAN">
+   <property name="icon">
+    <iconset resource="../icones.qrc">
+     <normaloff>:/CC/images/xjDBSCAN.png</normaloff>:/CC/images/xjDBSCAN.png</iconset>
+   </property>
+   <property name="text">
+    <string>DBSCAN</string>
    </property>
   </action>
  </widget>
