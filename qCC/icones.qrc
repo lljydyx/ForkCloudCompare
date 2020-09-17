@@ -161,5 +161,6 @@
         <file>images/icon/cc_icon_32.png</file>
         <file>images/icon/cc_icon_64.png</file>
         <file>images/icon/xj.jpg</file>
+        <file>images/icon/xjLogo2.jpg</file>
     </qresource>
 </RCC>

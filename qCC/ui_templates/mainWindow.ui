@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../icones.qrc">
-    <normaloff>:/CC/images/xjLogo2.png</normaloff>:/CC/images/xjLogo2.png</iconset>
+    <normaloff>:/CC/Icons/images/icon/xjLogo2.jpg</normaloff>:/CC/Icons/images/icon/xjLogo2.jpg</iconset>
   </property>
   <property name="autoFillBackground">
    <bool>true</bool>

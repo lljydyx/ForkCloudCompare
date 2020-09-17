@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project( CloudCompareProjects )
+project( PointCloudDenoisingProjects )
 
 option(BUILD_TESTING "" OFF)
 include(CTest)
@@ -23,7 +23,7 @@ endif()
 
 # Default install folders
 # (on Windows - msvc generator - the '_debug' suffix is automatically added for debug configurations)
-set( INSTALL_DESTINATIONS CloudCompare )
+set( INSTALL_DESTINATIONS PointCloudDenoising )
 
 # RPATH Linux/Unix: (dynamic) libs are put in a subdir of prefix/lib,
 # since they are only used by qCC/ccViewer
@@ -41,7 +41,7 @@ OPTION( OPTION_GL_QUAD_BUFFER_SUPPORT "Check to compile CloudCompare and ccViewe
 # Define target folders
 # (now that ccViewer can have its own plugins, qCC and ccViewer must fall in separate folders!
 if(WIN32 OR APPLE) 
-	set( CLOUDCOMPARE_DEST_FOLDER CloudCompare )
+	set( CLOUDCOMPARE_DEST_FOLDER PointCloudDenoising )
 	set( CCVIEWER_DEST_FOLDER ccViewer )
 	if (OPTION_GL_QUAD_BUFFER_SUPPORT)
 		set ( CLOUDCOMPARE_DEST_FOLDER ${CLOUDCOMPARE_DEST_FOLDER}Stereo )

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project( CloudCompare VERSION 2.11.0 )
+project( PointCloudDenoising VERSION 2.11.0 )
 
 include( CMakePolicies NO_POLICY_SCOPE )
 
@@ -47,7 +47,7 @@ qt5_add_resources( generated_qrc_list ${qrc_list} )
 
 if( MSVC )
 	# App icon with MSVC
-	set( rc_list images/icon/cc_icon.rc )
+	set( rc_list images/icon/xj2_icon.rc )
 
 	#to get rid of the (system) console
 	add_executable( ${PROJECT_NAME} WIN32 ${header_list} ${source_list} ${generated_ui_list} ${generated_qrc_list} ${rc_list} ${txt_list} )
@@ -105,7 +105,7 @@ if( WIN32 )
 		if (NOT CMAKE_RC_COMPILER)
 			set( CMAKE_RC_COMPILER windres )
 		endif()
-		add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_RC_COMPILER} -i ${CMAKE_CURRENT_SOURCE_DIR}/images/icon/cc_icon.rc --input-format=rc -o ${CMAKE_CURRENT_BINARY_DIR}/cc_icon.res -O coff )
+		add_custom_command( TARGET ${PROJECT_NAME} PRE_BUILD COMMAND ${CMAKE_RC_COMPILER} -i ${CMAKE_CURRENT_SOURCE_DIR}/images/icon/xj2_icon.rc --input-format=rc -o ${CMAKE_CURRENT_BINARY_DIR}/xj2_icon.res -O coff )
 	endif()
 endif()
 
