@@ -4509,7 +4509,7 @@ void MainWindow::doCompute2HalfDimVolume()
 	calcVolumeTool.exec();
 }
 
-void MainWindow::doActionRasterize()
+void MainWindow::doActionRasterize()/* XXXÕ¤¸ñ»¯ */
 {
 	if (!haveOneSelection())
 	{

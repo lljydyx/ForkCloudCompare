@@ -154,6 +154,14 @@ ccRasterizeTool::ccRasterizeTool(ccGenericPointCloud* cloud, QWidget* parent)
 				m_UI->activeLayerComboBox->addItem(pc->getScalarField(i)->getName(), QVariant(LAYER_SF));
 			}
 		}
+#pragma region //XXX添加 高程极差ZRange、DoPP
+		if (cloud->isA(CC_TYPES::POINT_CLOUD))
+		{
+			m_UI->activeLayerComboBox->addItem("ZRange");
+			m_UI->activeLayerComboBox->addItem("DoPP");
+		}
+#pragma endregion
+
 
 		m_UI->activeLayerComboBox->setEnabled(m_UI->activeLayerComboBox->count() > 1);
 
