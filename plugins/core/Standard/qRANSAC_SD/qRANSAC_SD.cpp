@@ -118,7 +118,7 @@ void doDetection()
 }
 
 //for parameters persistence
-static unsigned s_supportPoints = 500;	// this is the minimal numer of points required for a primitive
+static unsigned s_supportPoints = 100;	// this is the minimal numer of points required for a primitive
 static double   s_maxNormalDev_deg = 25.0;	// maximal normal deviation from ideal shape (in degrees)
 static double   s_proba = 0.01;	// probability that no better candidate was overlooked during sampling
 static bool s_primEnabled[5] = { true,false,false,false,false };
@@ -610,6 +610,30 @@ ccHObject* qRansacSD::executeRANSAC(ccPointCloud* ccPC, const RansacParams& para
 				prim->setName(dipAndDipDirStr);
 				pcShape->setName(QString("Plane_%1").arg(planeCount, 4, 10, QChar('0')));
 				planeCount++;
+
+				/* RMS */
+				//double dSumSq = 0.0;
+				////compute deviations
+				//cloud->placeIteratorAtBeginning();
+				//for (unsigned i = 0; i < count; ++i)
+				//{
+				//	const CCVector3* P = cloud->getNextPoint();
+				//	double d = static_cast<double>(CCVector3::vdotd(P->u, planeEquation) - planeEquation[3])/*/norm*/; //norm == 1.0
+
+				//	dSumSq += d * d;
+				//}
+				//return static_cast<ScalarType>(sqrt(dSumSq / count));
+
+				double xjD = -CCVector3::vdotd(G, N);
+				double dSumSq = 0.0;
+				pcShape->placeIteratorAtBeginning();
+				for (unsigned i = 0; i < pcShape->size(); i++)
+				{
+					const CCVector3* P = pcShape->getNextPoint();
+					double d = static_cast<double>(CCVector3::vdotd(P->u, N)) + xjD;
+					dSumSq += d * d;
+				}
+				prim->setMetaData(QString("RMS"), QVariant(static_cast<ScalarType>(sqrt(dSumSq / pcShape->size()))));
 			}
 			break;
 
