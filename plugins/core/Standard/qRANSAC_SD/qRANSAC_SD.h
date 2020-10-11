@@ -51,20 +51,20 @@ public:
 		float   probability;	// probability that no better candidate was overlooked during sampling
 		bool randomColor; // should the resulting detected shapes sub point cloud be colored randomly
 		bool primEnabled[5]; //RANSAC_PRIMITIVE_TYPES
-		RansacParams() : epsilon(0.005f), bitmapEpsilon(0.001f), supportPoints(500), maxNormalDev_deg(25.0f), probability(0.01f), randomColor(true)
+		RansacParams() : epsilon(0.005f), bitmapEpsilon(0.001f), supportPoints(100), maxNormalDev_deg(25.0f), probability(0.01f), randomColor(true)
 		{
 			primEnabled[RPT_PLANE] = true;
-			primEnabled[RPT_SPHERE] = true;
-			primEnabled[RPT_CYLINDER] = true;
+			primEnabled[RPT_SPHERE] = false;
+			primEnabled[RPT_CYLINDER] = false;
 			primEnabled[RPT_CONE] = false;
 			primEnabled[RPT_TORUS] = false;
 		};
 
-		RansacParams(float scale) : epsilon(0.005f * scale), bitmapEpsilon(0.001f * scale), supportPoints(500), maxNormalDev_deg(25.0f), probability(0.01f), randomColor(true)
+		RansacParams(float scale) : epsilon(0.005f * scale), bitmapEpsilon(0.001f * scale), supportPoints(100), maxNormalDev_deg(25.0f), probability(0.01f), randomColor(true)
 		{
 			primEnabled[RPT_PLANE] = true;
-			primEnabled[RPT_SPHERE] = true;
-			primEnabled[RPT_CYLINDER] = true;
+			primEnabled[RPT_SPHERE] = false;
+			primEnabled[RPT_CYLINDER] = false;
 			primEnabled[RPT_CONE] = false;
 			primEnabled[RPT_TORUS] = false;
 		};
