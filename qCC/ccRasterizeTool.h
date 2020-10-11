@@ -190,7 +190,10 @@ private: //members
 	//! Layer types
 	enum LayerType {	LAYER_HEIGHT = 0,
 						LAYER_RGB = 1,
-						LAYER_SF = 2
+						LAYER_SF = 2,
+						LAYER_DoPP = 11,
+						LAYER_HeightRange = 12,
+						LAYER_HeightStdDev = 13
 	};
 
 	Ui::RasterizeToolDialog* m_UI;

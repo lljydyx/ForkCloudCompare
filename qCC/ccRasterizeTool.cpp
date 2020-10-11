@@ -154,12 +154,10 @@ ccRasterizeTool::ccRasterizeTool(ccGenericPointCloud* cloud, QWidget* parent)
 				m_UI->activeLayerComboBox->addItem(pc->getScalarField(i)->getName(), QVariant(LAYER_SF));
 			}
 		}
-#pragma region //XXX添加 高程极差ZRange、DoPP
-		if (cloud->isA(CC_TYPES::POINT_CLOUD))
-		{
-			m_UI->activeLayerComboBox->addItem("ZRange");
-			m_UI->activeLayerComboBox->addItem("DoPP");
-		}
+#pragma region //XXX添加 HeightRange、DoPP
+		m_UI->activeLayerComboBox->addItem(ccRasterGrid::GetDefaultFieldName(ccRasterGrid::PER_CELL_COUNT), QVariant(LAYER_DoPP));
+		m_UI->activeLayerComboBox->addItem(ccRasterGrid::GetDefaultFieldName(ccRasterGrid::PER_CELL_HEIGHT_RANGE), QVariant(LAYER_HeightRange));
+		m_UI->activeLayerComboBox->addItem(ccRasterGrid::GetDefaultFieldName(ccRasterGrid::PER_CELL_HEIGHT_STD_DEV), QVariant(LAYER_HeightStdDev));
 #pragma endregion
 
 
@@ -657,6 +655,26 @@ void ccRasterizeTool::updateGridAndDisplay()
 			exportedFields.push_back(ccRasterGrid::PER_CELL_HEIGHT);
 			//but we may also have to compute the 'original SF(s)' layer(s)
 			QString activeLayerName = m_UI->activeLayerComboBox->currentText();
+
+#pragma region XXX不同属性
+			if (activeLayerName == "Per-cell population")
+			{
+				exportedFields.clear();
+				exportedFields.push_back(ccRasterGrid::PER_CELL_COUNT);
+			}
+			else if (activeLayerName == "Height range")
+			{
+				exportedFields.clear();
+				exportedFields.push_back(ccRasterGrid::PER_CELL_HEIGHT_RANGE);
+			}
+			else if (activeLayerName == "Std. dev. height")
+			{
+				exportedFields.clear();
+				exportedFields.push_back(ccRasterGrid::PER_CELL_HEIGHT_STD_DEV);
+			}
+#pragma endregion
+
+
 			m_rasterCloud = convertGridToCloud(	exportedFields,
 												/*interpolateSF=*/interpolateSF,
 												/*interpolateColors=*/activeLayerIsRGB,
