@@ -14,7 +14,6 @@ if ( PLUGIN_EXAMPLE_STANDARD )
     
     # load any subdirectories (see qAdditionalIO for an example)
     # add_subdirectory( LIB1 )
-	find_package( PDAL 1.0.0 REQUIRED CONFIG )
     
     include( ../../CMakePluginTpl.cmake )
     
@@ -23,6 +22,7 @@ if ( PLUGIN_EXAMPLE_STANDARD )
     # include_directories( ${LIB1_INCLUDE_DIR} )
 	
 	# Link PDAL
+	find_package( PDAL 1.0.0 REQUIRED CONFIG )
 	include_directories( ${PDAL_INCLUDE_DIRS} )
 	link_directories( ${PDAL_LIBRARY_DIRS} )
 	target_link_libraries( ${PROJECT_NAME} "pdal_util" )

@@ -20,6 +20,13 @@ if (PLUGIN_STANDARD_QRANSAC_SD)
 	include_directories( ${QRANSAC_SD_MISC_LIB_SOURCE_DIR} )
 	include_directories( ${QRANSAC_SD_PRIM_SHAPES_LIB_SOURCE_DIR} )
 	include_directories( ${QRANSAC_SD_PRIM_SHAPES_LIB_SOURCE_DIR}/GfxTL )
+	
+	# Link PDAL
+	find_package( PDAL 1.0.0 REQUIRED CONFIG )
+	include_directories( ${PDAL_INCLUDE_DIRS} )
+	link_directories( ${PDAL_LIBRARY_DIRS} )
+	target_link_libraries( ${PROJECT_NAME} "pdal_util" )
+	target_link_libraries( ${PROJECT_NAME} "pdalcpp" )
 
 if (OPENMP_FOUND AND NOT WIN32) #DGM: OpenMP doesn't work with Visual at least (the process loops infinitely)
 	target_compile_definitions( ${PROJECT_NAME} PRIVATE DOPARALLEL )

@@ -20,6 +20,7 @@
 
 #include "ccStdPluginInterface.h"
 
+
 //! Example qCC plugin
 /** Replace 'ExamplePlugin' by your own plugin class name throughout and then
 	check 'ExamplePlugin.cpp' for more directions.

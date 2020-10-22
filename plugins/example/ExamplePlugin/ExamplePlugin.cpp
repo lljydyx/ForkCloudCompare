@@ -35,6 +35,19 @@
 
 #include "ExamplePlugin.h"
 
+////PDAL
+//#include <vector>
+//#include <memory>
+//#include <pdal/Options.hpp>
+//#include <pdal/PointTable.hpp>
+//#include <pdal/PointView.hpp>
+//#include <pdal/StageFactory.hpp>
+//#include <pdal/SpatialReference.hpp>
+//#include <pdal/io/LasHeader.hpp>
+//#include <pdal/io/LasReader.hpp>
+//#include <pdal/io/BufferReader.hpp>
+//#include <pdal/io/LasWriter.hpp>
+
 // Default constructor:
 //	- pass the Qt resource path to the info.json file (from <yourPluginName>.qrc file) 
 //  - constructor should mainly be used to initialize actions and other members
@@ -95,14 +108,38 @@ QList<QAction *> ExamplePlugin::getActions()
 // 3D views, console, etc.) via the 'm_app' variable (see the ccMainAppInterface
 // class in ccMainAppInterface.h).
 void ExamplePlugin::doAction()
-{	
-	if ( m_app == nullptr )
+{
+	if (m_app == nullptr)
 	{
 		// m_app should have already been initialized by CC when plugin is loaded
-		Q_ASSERT( false );
-		
+		Q_ASSERT(false);
+
 		return;
 	}
+
+	/* test PDAL */
+	int PointCount = 0;
+	//if (QFile::exists("F:/test.las"))
+	//{
+	//	using namespace pdal;
+	//	using namespace pdal::Dimension;
+	//	pdal::Option las_opt("filename", "F:/test.las");//参数1："filename"（键）
+	//	pdal::Options las_opts;
+	//	las_opts.add(las_opt);
+
+	//	pdal::PointTable table;
+	//	pdal::LasReader las_reader;
+	//	las_reader.setOptions(las_opts);
+	//	las_reader.prepare(table);
+
+	//	pdal::PointViewSet point_view_set = las_reader.execute(table);
+	//	pdal::PointViewPtr point_view = *point_view_set.begin();
+	//	pdal::Dimension::IdList dims = point_view->dims();
+	//	pdal::LasHeader las_header = las_reader.header();
+
+	//	//头文件信息
+	//	PointCount = las_header.pointCount();
+	//}
 
 	/*** HERE STARTS THE ACTION ***/
 
@@ -111,13 +148,13 @@ void ExamplePlugin::doAction()
 
 	// This is how you can output messages
 	// Display a standard message in the console
-	m_app->dispToConsole( "[ExamplePlugin] Hello world!", ccMainAppInterface::STD_CONSOLE_MESSAGE );
-	
+	m_app->dispToConsole("[ExamplePlugin] Hello world!" + QString::number(PointCount), ccMainAppInterface::STD_CONSOLE_MESSAGE);
+
 	// Display a warning message in the console
-	m_app->dispToConsole( "[ExamplePlugin] Warning: example plugin shouldn't be used as is", ccMainAppInterface::WRN_CONSOLE_MESSAGE );
-	
+	m_app->dispToConsole("[ExamplePlugin] Warning: example plugin shouldn't be used as is", ccMainAppInterface::WRN_CONSOLE_MESSAGE);
+
 	// Display an error message in the console AND pop-up an error box
-	m_app->dispToConsole( "Example plugin shouldn't be used - it doesn't do anything!", ccMainAppInterface::ERR_CONSOLE_MESSAGE );
+	m_app->dispToConsole("Example plugin shouldn't be used - it doesn't do anything!", ccMainAppInterface::ERR_CONSOLE_MESSAGE);
 
 	/*** HERE ENDS THE ACTION ***/
 }
