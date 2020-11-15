@@ -20,4 +20,12 @@ if ( PLUGIN_EXAMPLE_STANDARD )
     # set dependencies to necessary libraries (see qPCV for an example)
     # target_link_libraries( ${PROJECT_NAME} LIB1 )
     # include_directories( ${LIB1_INCLUDE_DIR} )
+	
+	# Link PDAL
+	find_package( PDAL 1.0.0 REQUIRED CONFIG )
+	include_directories( ${PDAL_INCLUDE_DIRS} )
+	link_directories( ${PDAL_LIBRARY_DIRS} )
+	target_link_libraries( ${PROJECT_NAME} "pdal_util" )
+	target_link_libraries( ${PROJECT_NAME} "pdalcpp" )
+	
 endif()
