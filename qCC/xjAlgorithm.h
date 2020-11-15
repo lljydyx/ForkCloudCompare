@@ -182,8 +182,11 @@ public:
 	double TwoDistancePointAndLine(const CCVector3 & p0, const CCVector3 & p1, const CCVector3 & p2);
 	std::vector<CCVector3> xjMinimumBoundingRectangle(double & length, double & width, const std::vector<CCVector3>& vCHpoint);
 	
-	
+	/* gridding */
 	QMultiHash<int, xjPoint> xjGridding(ccPointCloud * cloud, xjLasParameter &parameter);
+
+	/* compute the shape of grid points */
+	void xjComputeShape(QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter);
 
 	/* denoising */
 	void xjDenoising(QMultiHash<int, xjPoint>& mhGridding, xjLasParameter & parameter);
@@ -202,6 +205,8 @@ public:
 
 	/* create ccPointCloud */
 	void xjCreatePointCloud(const QMultiHash<int, xjPoint>& mhGridding, xjLasParameter & parameter, ccPointCloud * newCloud);
+
+	void xjCreatePointCloud(const QMultiHash<int, xjPoint>& mhGridding, ccPointCloud * newCloud);
 
 	/* 高程统计过滤 Elevation Statistical Filter */
 	QList<xjPoint> xjElevationStatisticalFilter(const QList<xjPoint>& listP, const xjLasParameter &parameter);

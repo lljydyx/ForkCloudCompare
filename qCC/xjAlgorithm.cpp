@@ -551,6 +551,31 @@ QMultiHash<int, xjPoint> xjAlgorithm::xjGridding(ccPointCloud *cloud, xjLasParam
 	return mhGridding;
 }
 
+/* compute the shape of grid points */
+void xjAlgorithm::xjComputeShape(QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter)
+{
+	QMultiHash<int, int> mhKey;
+	for (QMultiHash<int, xjPoint>::const_iterator it = mhGridding.constBegin(); it != mhGridding.constEnd(); ++it)
+	{
+		int gn = it.key();
+		if (mhKey.contains(gn)) { continue; }
+		mhKey.insert(gn, gn);
+
+		QList<xjPoint> listP = mhGridding.values(it.key());
+
+		/* distinguish shape */
+		double angle = 0;
+		int shape = xjEigenValueVectorShape(listP, angle);
+
+		mhGridding.remove(it.key());
+		for each (xjPoint p in listP)
+		{
+			p.Classification = shape;
+			mhGridding.insert(it.key(), p);
+		}
+	}
+}
+
 /* denoising */
 void xjAlgorithm::xjDenoising(QMultiHash<int, xjPoint> &mhGridding, xjLasParameter &parameter)
 {
@@ -604,7 +629,6 @@ QMultiHash<int, int> xjAlgorithm::xjGetGridNumber(const QMultiHash<int, xjPoint>
 int xjAlgorithm::xjEigenValueVectorShape(const QList<xjPoint> &listP, double &includedAngle)
 {
 	int shape = 1;
-
 
 #pragma region average
 	float meanX = 0.0f, meanY = 0.0f, meanZ = 0.0f;
@@ -1008,7 +1032,27 @@ void xjAlgorithm::xjCreatePointCloud(const QMultiHash<int, xjPoint> &mhGridding,
 		//}
 	}
 }
+void xjAlgorithm::xjCreatePointCloud(const QMultiHash<int, xjPoint> &mhGridding, ccPointCloud *newCloud)
+{
+	QMultiHash<int, int> mhKey;
+	for (QMultiHash<int, xjPoint>::const_iterator it = mhGridding.constBegin(); it != mhGridding.constEnd(); ++it)
+	{
+		int gn = it.key();
+		if (mhKey.contains(gn)) { continue; }
+		mhKey.insert(gn, gn);
 
+		QList<xjPoint> listP = mhGridding.values(it.key());
+
+		double includedAngle =-1;
+		int shape = xjEigenValueVectorShape(listP, includedAngle);
+
+		newCloud->reserveTheRGBTable();
+			for (int j = 0; j < listP.size(); j++)
+			{
+				newCloud->addPoint(CCVector3(listP.at(j).x, listP.at(j).y, listP.at(j).z));
+			}
+	}
+}
 
 /* ---------- GDAL ---------- */
 /* create polyline */

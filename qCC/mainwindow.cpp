@@ -11257,6 +11257,54 @@ void MainWindow::on_actionPCA_triggered()
 	ccLog::Print("[PCA] OK");
 }
 
+/* 形状分类：线 面 球 */
+void MainWindow::on_actionClassByShape_triggered()
+{
+	ccProgressDialog pDlg(false, this);
+	pDlg.setAutoClose(true);
+	pDlg.setMethodTitle("...");
+	pDlg.start();
+
+	xjAlgorithm *xjal = new xjAlgorithm();
+	QStringList xjList; xjList.clear();
+	ccHObject::Container selectedEntities = getSelectedEntities(); //warning, getSelectedEntites may change during this loop!
+	ccHObject* resultContainer = new ccHObject("ClassShape");
+	for (ccHObject *entity : selectedEntities)
+	{
+		if (entity->isKindOf(CC_TYPES::POINT_CLOUD))
+		{
+			ccPointCloud* cloud = ccHObjectCaster::ToPointCloud(entity);
+			if (cloud)
+			{
+				/* To do... */
+				QString cloudName = cloud->getName();
+				if (cloudName.contains(" - Cloud"))
+					cloudName = cloudName.left(cloudName.length() - 8);
+
+				xjLasParameter parameter;
+				parameter.GSD = 0.3;
+				parameter.bVoxel = true;
+
+				/* Gridding */
+				QMultiHash<int, xjPoint> mhGrid = xjal->xjGridding(cloud, parameter);
+
+				xjal->xjComputeShape(mhGrid, parameter);
+
+
+			}
+		}
+	}
+
+	addToDB(xjList, 0, 0);
+	refreshAll();
+	updateUI();
+
+	delete xjal;
+	xjal = nullptr;
+
+	ccLog::Print("[Class by shape] OK");
+}
+
 
 /* 测试 */
 void MainWindow::on_actionDoTest_triggered()

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1060</width>
-    <height>812</height>
+    <width>781</width>
+    <height>580</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -38,7 +38,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1060</width>
+     <width>781</width>
      <height>23</height>
     </rect>
    </property>
@@ -807,6 +807,7 @@ QTreeView::branch:open:has-children:has-siblings  {
    <addaction name="actionExtractTrafficMarking"/>
    <addaction name="actionPCtoPolyline"/>
    <addaction name="actionPCA"/>
+   <addaction name="actionClassByShape"/>
   </widget>
   <widget class="QDockWidget" name="dockWidgetTest">
    <property name="minimumSize">
@@ -3177,6 +3178,11 @@ QTreeView::branch:open:has-children:has-siblings  {
    </property>
    <property name="toolTip">
     <string>PCA 主成分分析</string>
+   </property>
+  </action>
+  <action name="actionClassByShape">
+   <property name="text">
+    <string>形状分类</string>
    </property>
   </action>
  </widget>

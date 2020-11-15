@@ -331,6 +331,8 @@ private slots:
 	void on_actionPCtoPolyline_triggered();
 	/* PCA: Principal Component Analysis 主成分分析 */
 	void on_actionPCA_triggered();
+	/* 形状分类：线 面 球 */
+	void on_actionClassByShape_triggered();
 	/* 测试 */
 	void on_actionDoTest_triggered();
 
