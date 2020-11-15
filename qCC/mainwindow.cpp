@@ -11448,7 +11448,6 @@ void MainWindow::on_actionDoTest_triggered()
 				QString cloudName = cloud->getName();
 				if (cloudName.contains(" - Cloud"))
 					cloudName = cloudName.left(cloudName.length() - 8);
-
 			}
 		}
 	}
